@@ -12,6 +12,7 @@ import {
   Legend,
 } from "chart.js";
 import axios from "axios";
+      const apiUrl = import.meta.env.VITE_API_URL;
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -22,7 +23,7 @@ const ProfitDistribution = () => {
   useEffect(() => {
     const fetchProfitData = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/projects/profit-distribution"); // update URL accordingly
+        const res = await axios.get(`${apiUrl}/api/projects/profit-distribution`); // update URL accordingly
         setProjects(res.data);
         setLoading(false);
       } catch (error) {
@@ -131,7 +132,7 @@ const ProfitDistribution = () => {
                     projectName={project.name}
                     price={project.value}
                     completion={100} // Or fetch from backend if available
-                    userImage="https://randomuser.me/api/portraits/lego/2.jpg"
+                    userImage={`${apiUrl}/api/portraits/lego/2.jpg`}
                   />
                   <div className="w-full h-48 px-2">
                     <Bar data={barData} options={barOptions} />

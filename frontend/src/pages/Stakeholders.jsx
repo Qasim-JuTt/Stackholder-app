@@ -5,6 +5,7 @@ import Sidebar from "../components/Sidebar";
 import Pagination from "../components/Pagination";
 import InputField from "../components/InputField";
 import Navbar from "../components/Navbar";
+      const apiUrl = import.meta.env.VITE_API_URL;
 
 const roleColors = {
   Developer: "text-blue-600",
@@ -41,14 +42,14 @@ const Stakeholders = () => {
   useEffect(() => {
     fetchStakeholders();
     axios
-      .get("http://localhost:5000/api/projects/getName")
+      .get(`${apiUrl}/api/projects/getName`)
       .then((res) => setProjectOptions(res.data))
       .catch((err) => console.error("Failed to fetch projects:", err));
   }, []);
 
   const fetchStakeholders = () => {
     axios
-      .get("http://localhost:5000/api/stakeholders")
+      .get(`${apiUrl}/api/stakeholders`)
       .then((res) => setStakeholders(res.data))
       .catch((err) => console.error("Error fetching stakeholders:", err));
   };
@@ -85,7 +86,7 @@ const Stakeholders = () => {
     if (modalData._id) {
       axios
         .put(
-          `http://localhost:5000/api/stakeholders/${modalData._id}`,
+          `${apiUrl}/api/stakeholders/${modalData._id}`,
           modalData
         )
         .then(() => {
@@ -94,7 +95,7 @@ const Stakeholders = () => {
         });
     } else {
       axios
-        .post("http://localhost:5000/api/stakeholders", modalData)
+        .post(`${apiUrl}/api/stakeholders`, modalData)
         .then(() => {
           fetchStakeholders();
           setModalOpen(false);
@@ -104,7 +105,7 @@ const Stakeholders = () => {
 
   const handleDelete = (id) => {
     if (window.confirm("Are you sure?")) {
-      axios.delete(`http://localhost:5000/api/stakeholders/${id}`).then(() => {
+      axios.delete(`${apiUrl}/api/stakeholders/${id}`).then(() => {
         fetchStakeholders();
       });
     }

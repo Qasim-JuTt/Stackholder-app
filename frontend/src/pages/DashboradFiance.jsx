@@ -12,6 +12,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+      const apiUrl = import.meta.env.VITE_API_URL;
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -21,7 +22,7 @@ const FinanceDashboard = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/projects/expenses");
+        const res = await axios.get(`${apiUrl}/api/projects/expenses`);
         setProjects(res.data);
       } catch (err) {
         console.error("Failed to fetch project data", err);
@@ -127,7 +128,7 @@ const FinanceDashboard = () => {
                     price={proj.value}
                     budget={proj.value}
                     expenditure={proj.totalExpense}
-                    userImage={`https://randomuser.me/api/portraits/lego/${i + 1}.jpg`}
+                    userImage={`${apiUrl}/api/portraits/lego/${i + 1}.jpg`}
                   />
                 </div>
                 <div className="h-52  ">

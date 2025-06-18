@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import Pagination from "../components/Pagination";
 import AddTransactionModal from "./AddProjectFiance";
+      const apiUrl = import.meta.env.VITE_API_URL;
 
 const ProjectFinance = () => {
   const reportsPerPage = 5;
@@ -18,7 +19,7 @@ const ProjectFinance = () => {
   const fetchTransactions = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/projectfinance/getAll"
+        `${apiUrl}/api/projectfinance/getAll`
       );
       setReports(res.data);
     } catch (err) {
@@ -38,7 +39,7 @@ const ProjectFinance = () => {
 
     try {
       await axios.delete(
-        `http://localhost:5000/api/projectfinance/delete/${transactionId}`
+        `${apiUrl}/api/projectfinance/delete/${transactionId}`
       );
       fetchTransactions();
     } catch (err) {

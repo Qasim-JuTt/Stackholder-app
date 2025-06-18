@@ -5,6 +5,7 @@ import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 import Pagination from '../components/Pagination';
 import InputField from '../components/InputField';
+      const apiUrl = import.meta.env.VITE_API_URL;
 
 const initialModalData = {
   id: '',
@@ -29,7 +30,7 @@ const ProjectManagement = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/projects/getAll');
+        const res = await axios.get(`${apiUrl}/api/projects/getAll`);
         setProjects(res.data);
       } catch (err) {
         console.error('Failed to fetch projects', err);
@@ -48,10 +49,10 @@ const ProjectManagement = () => {
   const handleSave = async () => {
     try {
       if (!modalData.id) {
-        const res = await axios.post('http://localhost:5000/api/projects/create', modalData);
+        const res = await axios.post(`${apiUrl}/api/projects/create`, modalData);
         setProjects([...projects, res.data]);
       } else {
-        const res = await axios.put(`http://localhost:5000/api/projects/update/${modalData.id}`, modalData);
+        const res = await axios.put(`${apiUrl}/api/projects/update/${modalData.id}`, modalData);
         setProjects(projects.map(p => (p._id === modalData.id ? res.data : p)));
       }
       setIsModalOpen(false);
@@ -64,7 +65,7 @@ const ProjectManagement = () => {
   const handleDelete = async (id) => {
     if (confirm(`Are you sure you want to delete this project? ${id}`)) {
       try {
-        await axios.delete(`http://localhost:5000/api/projects/delete/${id}`);
+        await axios.delete(`${apiUrl}/api/projects/delete/${id}`);
         setProjects(projects.filter(p => p._id !== id));
       } catch (err) {
         console.error('Failed to delete project:', err);

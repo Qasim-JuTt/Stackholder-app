@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import ProjectCard from "./ProjectCard";
 import StakeholderCard from "../components/StackholdCard";
 import { useSearch } from "../context/searchContext";
+      const apiUrl = import.meta.env.VITE_API_URL;
 
 const Dashboard = () => {
   const [projectsData, setProjectsData] = useState([]);
@@ -29,7 +30,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchProjectsWithStakeholders = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/projects/with-stakeholders");
+        const response = await axios.get(`${apiUrl}/api/projects/with-stakeholders`);
         const filteredProjects = response.data.filter(
           (project) => project.stakeholders && project.stakeholders.length > 0
         );
@@ -113,7 +114,7 @@ const Dashboard = () => {
                     projectName={project.name}
                     price={project.value || 0}
                     completion={project.completion || 0}
-                    userImage={"https://randomuser.me/api/portraits/lego/1.jpg"}
+                    userImage={`${apiUrl}/api/portraits/lego/1.jpg`}
                   />
                   <StakeholderCard
                     stakeholderData={getStakeholderSummary(project.stakeholders)}

@@ -30,11 +30,12 @@ const AddTransactionModal = ({ open, onClose, editId, refreshData }) => {
   const [projectOptions, setProjectOptions] = useState([]);
 
   const expenseCategories = ['Food', 'Transport', 'Housing', 'Entertainment', 'Utilities', 'Other'];
+      const apiUrl = import.meta.env.VITE_API_URL;
 
   // Fetch project options
   useEffect(() => {
     axios
-      .get('http://localhost:5000/api/projects/getName')
+      .get(`${apiUrl}/api/projects/getName`)
       .then(res => setProjectOptions(res.data))
       .catch(err => console.error('Failed to fetch projects:', err));
   }, []);
@@ -43,7 +44,7 @@ const AddTransactionModal = ({ open, onClose, editId, refreshData }) => {
   useEffect(() => {
     if (open && editId) {
       axios
-        .get(`http://localhost:5000/api/projectfinance/get/${editId}`)
+        .get(`${apiUrl}/api/projectfinance/get/${editId}`)
         .then((res) => {
           const t = res.data;
           setAmount(t.amount || '');
@@ -75,9 +76,9 @@ const AddTransactionModal = ({ open, onClose, editId, refreshData }) => {
 
     try {
       if (editId) {
-        await axios.put(`http://localhost:5000/api/projectfinance/update/${editId}`, transactionData);
+        await axios.put(`${apiUrl}/api/projectfinance/update/${editId}`, transactionData);
       } else {
-        await axios.post('http://localhost:5000/api/projectfinance/create', transactionData);
+        await axios.post(`${apiUrl}/api/projectfinance/create`, transactionData);
       }
 
       refreshData();
