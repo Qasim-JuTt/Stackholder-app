@@ -1,10 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import ProjectCard from "./ProjectCard";
 import StakeholderCard from "../components/StackholdCard";
+import { useSearch } from "../context/searchContext";
 
 const Dashboard = () => {
+  const [projectsData, setProjectsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const { searchTerm, searchResults } = useSearch();
+
   const [stakeholders] = useState({
     total: 120,
     active: 85,
@@ -13,69 +20,50 @@ const Dashboard = () => {
   });
 
   const stakeholderStats = [
-    {
-      title: "Total Stakeholders",
-      value: stakeholders.total,
-      bg: "#16a34a",
-    },
-    {
-      title: "Active Stakeholders",
-      value: stakeholders.active,
-      bg: "#2563eb",
-    },
-    {
-      title: "Inactive Stakeholders",
-      value: stakeholders.inactive,
-       bg: "#7c3aed",
-    },
-    {
-      title: "New Stakeholders",
-      value: stakeholders.new,
-      bg: "#f59e0b",
-    },
+    { title: "Total Stakeholders", value: stakeholders.total, bg: "#16a34a" },
+    { title: "Active Stakeholders", value: stakeholders.active, bg: "#2563eb" },
+    { title: "Inactive Stakeholders", value: stakeholders.inactive, bg: "#7c3aed" },
+    { title: "New Stakeholders", value: stakeholders.new, bg: "#f59e0b" },
   ];
 
-  const stakeholderCards = [
-    {
-      projectName: "Project Alpha",
-      completion: 76,
-      price: 567,
-      userImage: "https://randomuser.me/api/portraits/women/44.jpg",
-      stakeholderData: {
-        customer: { name: "Ali Khan", percentage: 20 },
-        investor: { name: "Sarah Lee", percentage: 30 },
-        employee: { name: "John Doe", percentage: 25 },
-        partner: { name: "Zara Patel", percentage: 15 },
-        vendor: { name: "Bilal Zain", percentage: 10 },
-      },
-    },
-    {
-      projectName: "Project Beta",
-      completion: 85,
-      price: 567,
-      userImage: "https://randomuser.me/api/portraits/men/55.jpg",
-      stakeholderData: {
-        customer: { name: "Ahmed Raza", percentage: 20 },
-        investor: { name: "Fatima Noor", percentage: 30 },
-        employee: { name: "David Chen", percentage: 25 },
-        partner: { name: "Emily Tan", percentage: 15 },
-        vendor: { name: "Bilal Zain", percentage: 10 },
-      },
-    },
-    {
-      projectName: "Project Gamma",
-      completion: 92,
-      price: 567,
-      userImage: "https://randomuser.me/api/portraits/women/65.jpg",
-      stakeholderData: {
-        customer: { name: "Saima Malik", percentage: 20 },
-        investor: { name: "Ali Rehman", percentage: 30 },
-        employee: { name: "Usman Tariq", percentage: 25 },
-        partner: { name: "Mehwish Asad", percentage: 15 },
-        vendor: { name: "Bilal Zain", percentage: 10 },
-      },
-    },
-  ];
+  useEffect(() => {
+    const fetchProjectsWithStakeholders = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/projects/with-stakeholders");
+        const filteredProjects = response.data.filter(
+          (project) => project.stakeholders && project.stakeholders.length > 0
+        );
+        setProjectsData(filteredProjects);
+      } catch (error) {
+        console.error("Failed to fetch projects:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjectsWithStakeholders();
+  }, []);
+
+  // Helper to summarize stakeholder data by role
+  const getStakeholderSummary = (stakeholders = []) => {
+    const summary = {};
+    stakeholders.forEach(({ role, name, share }) => {
+      const key = role.toLowerCase();
+      if (!summary[key]) {
+        summary[key] = { name, percentage: 0 };
+      }
+      summary[key].percentage += share;
+    });
+    return summary;
+  };
+
+  // ✅ Updated logic to show only matching results
+  const displayedProjects =
+    searchTerm.trim() !== '' && Array.isArray(searchResults)
+      ? searchResults
+      : Array.isArray(projectsData)
+      ? projectsData
+      : [];
 
   return (
     <div className="flex min-h-screen bg-[#f4f7fe]">
@@ -105,23 +93,35 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* Project Cards Section */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {stakeholderCards.map((card, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-xl p-4 shadow space-y-4"
-              >
-                <ProjectCard
-                  projectName={card.projectName}
-                  price={card.price}
-                  completion={card.completion}
-                  userImage={card.userImage}
-                />
-                <StakeholderCard stakeholderData={card.stakeholderData} />
-              </div>
-            ))}
-          </div>
+          {/* Projects with Stakeholders */}
+          {loading ? (
+            <p>Loading projects and stakeholders...</p>
+          ) : displayedProjects.length === 0 ? (
+            searchTerm.trim() ? (
+              <p>No matching projects found for "{searchTerm}"</p>
+            ) : (
+              <p>No projects available.</p>
+            )
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 h-[400px] md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {displayedProjects.map((project) => (
+                <div
+                  key={project._id}
+                  className="bg-white rounded-xl p-4 shadow space-y-4"
+                >
+                  <ProjectCard
+                    projectName={project.name}
+                    price={project.value || 0}
+                    completion={project.completion || 0}
+                    userImage={"https://randomuser.me/api/portraits/lego/1.jpg"}
+                  />
+                  <StakeholderCard
+                    stakeholderData={getStakeholderSummary(project.stakeholders)}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

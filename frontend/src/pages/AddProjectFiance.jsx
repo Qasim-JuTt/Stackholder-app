@@ -1,5 +1,5 @@
-// components/AddTransactionModal.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   Typography,
   TextField,
@@ -20,24 +20,51 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
-const AddTransactionModal = ({ open, onClose, onAddTransaction }) => {
+const AddTransactionModal = ({ open, onClose, editId, refreshData }) => {
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date());
   const [category, setCategory] = useState('');
   const [project, setProject] = useState('');
   const [description, setDescription] = useState('');
-  const [type, setType] = useState('income');
+  const [type, setType] = useState('expense');
+  const [projectOptions, setProjectOptions] = useState([]);
 
-  const incomeCategories = ['Salary', 'Freelance', 'Investment', 'Gift', 'Other'];
   const expenseCategories = ['Food', 'Transport', 'Housing', 'Entertainment', 'Utilities', 'Other'];
 
-  const projectOptions = ['Website Redesign', 'Marketing Campaign', 'New Product Launch', 'Client Onboarding']; // Example projects
+  // Fetch project options
+  useEffect(() => {
+    axios
+      .get('http://localhost:5000/api/projects/getName')
+      .then(res => setProjectOptions(res.data))
+      .catch(err => console.error('Failed to fetch projects:', err));
+  }, []);
 
-  const handleSubmit = (e) => {
+  // Load transaction data for editing
+  useEffect(() => {
+    if (open && editId) {
+      axios
+        .get(`http://localhost:5000/api/projectfinance/get/${editId}`)
+        .then((res) => {
+          const t = res.data;
+          setAmount(t.amount || '');
+          setDate(t.date ? new Date(t.date) : new Date());
+          setCategory(t.category || '');
+          setProject(t.project?._id || '');
+          setDescription(t.description || '');
+          setType('expense'); // Always set to expense
+        })
+        .catch((err) => console.error('Failed to fetch transaction:', err));
+    }
+
+    // Reset when opening in "add" mode
+    if (open && !editId) {
+      resetForm();
+    }
+  }, [editId, open]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const newEntry = {
-      id: Date.now(),
+    const transactionData = {
       amount: parseFloat(amount),
       date,
       category,
@@ -46,14 +73,28 @@ const AddTransactionModal = ({ open, onClose, onAddTransaction }) => {
       type
     };
 
-    onAddTransaction(newEntry);
-    onClose();
+    try {
+      if (editId) {
+        await axios.put(`http://localhost:5000/api/projectfinance/update/${editId}`, transactionData);
+      } else {
+        await axios.post('http://localhost:5000/api/projectfinance/create', transactionData);
+      }
 
-    // Reset form
+      refreshData();
+      onClose();
+      resetForm();
+    } catch (error) {
+      console.error(editId ? 'Failed to update transaction:' : 'Failed to add transaction:', error);
+    }
+  };
+
+  const resetForm = () => {
     setAmount('');
+    setDate(new Date());
     setCategory('');
     setProject('');
     setDescription('');
+    setType('expense');
   };
 
   return (
@@ -87,26 +128,21 @@ const AddTransactionModal = ({ open, onClose, onAddTransaction }) => {
           position: 'relative',
         }}
       >
-        <Typography variant="h6" component="div" sx={{
-          fontSize: '1.25rem',
-          fontWeight: '600',
-          color: '#4338ca'
-        }}>
-          Add Transaction
+        <Typography variant="h6" component="div" sx={{ fontSize: '1.25rem', fontWeight: 600, color: '#4338ca' }}>
+          {editId ? 'Edit Transaction' : 'Add Transaction'}
         </Typography>
         <IconButton
           aria-label="close"
-          onClick={onClose}
+          onClick={() => {
+            onClose();
+            resetForm();
+          }}
           sx={{
             color: '#9ca3af',
-            transition: 'color 0.3s ease',
             position: 'absolute',
             right: '8px',
             top: '8px',
-            fontSize: '1.5rem',
-            '&:hover': {
-              color: '#ef4444'
-            }
+            '&:hover': { color: '#ef4444' }
           }}
         >
           <CloseIcon />
@@ -119,13 +155,11 @@ const AddTransactionModal = ({ open, onClose, onAddTransaction }) => {
           paddingTop: '12px',
           paddingX: '12px',
           marginTop: '16px',
-          '& > * + *': {
-            marginTop: '16px'
-          }
+          '& > * + *': { marginTop: '16px' }
         }}
       >
         <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <form onSubmit={handleSubmit}>
+          <form id="add-transaction-form" onSubmit={handleSubmit}>
             <Grid container spacing={3}>
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth>
@@ -134,8 +168,8 @@ const AddTransactionModal = ({ open, onClose, onAddTransaction }) => {
                     value={type}
                     onChange={(e) => setType(e.target.value)}
                     label="Type"
+                    required
                   >
-                    <MenuItem value="income">Income</MenuItem>
                     <MenuItem value="expense">Expense</MenuItem>
                   </Select>
                 </FormControl>
@@ -149,6 +183,7 @@ const AddTransactionModal = ({ open, onClose, onAddTransaction }) => {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   required
+                  inputProps={{ min: 0, step: '0.01' }}
                 />
               </Grid>
 
@@ -172,7 +207,7 @@ const AddTransactionModal = ({ open, onClose, onAddTransaction }) => {
                     label="Category"
                     required
                   >
-                    {(type === 'income' ? incomeCategories : expenseCategories).map((cat) => (
+                    {expenseCategories.map((cat) => (
                       <MenuItem key={cat} value={cat}>{cat}</MenuItem>
                     ))}
                   </Select>
@@ -189,7 +224,7 @@ const AddTransactionModal = ({ open, onClose, onAddTransaction }) => {
                     required
                   >
                     {projectOptions.map((proj) => (
-                      <MenuItem key={proj} value={proj}>{proj}</MenuItem>
+                      <MenuItem key={proj._id} value={proj._id}>{proj.name}</MenuItem>
                     ))}
                   </Select>
                 </FormControl>
@@ -216,40 +251,39 @@ const AddTransactionModal = ({ open, onClose, onAddTransaction }) => {
           paddingTop: '16px',
           paddingX: '16px',
           paddingBottom: '16px',
-          marginTop: '16px',
           justifyContent: 'flex-end',
           gap: '16px'
         }}
       >
         <Button 
-          onClick={onClose}
+          onClick={() => {
+            onClose();
+            resetForm();
+          }}
           sx={{
             paddingX: '16px',
             paddingY: '8px',
             border: '1px solid #d1d5db',
             borderRadius: '8px',
             color: '#4b5563',
-            '&:hover': {
-              backgroundColor: '#f3f4f6'
-            }
+            '&:hover': { backgroundColor: '#f3f4f6' }
           }}
         >
           Cancel
         </Button>
         <Button 
-          onClick={handleSubmit}
+          type="submit"
+          form="add-transaction-form"
           sx={{
             paddingX: '16px',
             paddingY: '8px',
             backgroundColor: '#4f46e5',
             color: 'white',
             borderRadius: '8px',
-            '&:hover': {
-              backgroundColor: '#4338ca'
-            }
+            '&:hover': { backgroundColor: '#4338ca' }
           }}
         >
-          Add Transaction
+          {editId ? 'Update' : 'Add'} Transaction
         </Button>
       </DialogActions>
     </Dialog>

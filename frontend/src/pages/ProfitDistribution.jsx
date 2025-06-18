@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import ProjectCard from "./ProjectCard";
@@ -10,100 +11,56 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import axios from "axios";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 const ProfitDistribution = () => {
-  const stakeholderCards = [
-    {
-      projectName: "Project Alpha",
-      completion: 76,
-      price: 567,
-      budget: 100000,
-      expenditure: 65000,
-      userImage: "https://randomuser.me/api/portraits/women/44.jpg",
-      stakeholderData: {
-        customer: { name: "Ali Khan", percentage: 20 },
-        investor: { name: "Sarah Lee", percentage: 30 },
-        employee: { name: "John Doe", percentage: 25 },
-        partner: { name: "Zara Patel", percentage: 15 },
-        vendor: { name: "Bilal Zain", percentage: 10 },
-      },
-    },
-    {
-      projectName: "Project Beta",
-      completion: 85,
-      price: 567,
-      budget: 150000,
-      expenditure: 120000,
-      userImage: "https://randomuser.me/api/portraits/men/55.jpg",
-      stakeholderData: {
-        customer: { name: "Ahmed Raza", percentage: 20 },
-        investor: { name: "Fatima Noor", percentage: 30 },
-        employee: { name: "David Chen", percentage: 25 },
-        partner: { name: "Emily Tan", percentage: 15 },
-        vendor: { name: "Bilal Zain", percentage: 10 },
-      },
-    },
-    {
-      projectName: "Project Gamma",
-      completion: 92,
-      price: 567,
-      budget: 200000,
-      expenditure: 180000,
-      userImage: "https://randomuser.me/api/portraits/women/65.jpg",
-      stakeholderData: {
-        customer: { name: "Saima Malik", percentage: 20 },
-        investor: { name: "Ali Rehman", percentage: 30 },
-        employee: { name: "Usman Tariq", percentage: 25 },
-        partner: { name: "Mehwish Asad", percentage: 15 },
-        vendor: { name: "Bilal Zain", percentage: 10 },
-      },
-    },
-  ];
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const totalBudget = stakeholderCards.reduce((sum, p) => sum + p.budget, 0);
-  const totalExpenditure = stakeholderCards.reduce((sum, p) => sum + p.expenditure, 0);
-  const totalProfit = totalBudget - totalExpenditure;
-  const avgCompletion = Math.round(
-    stakeholderCards.reduce((sum, p) => sum + p.completion, 0) / stakeholderCards.length
-  );
+  useEffect(() => {
+    const fetchProfitData = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/projects/profit-distribution"); // update URL accordingly
+        setProjects(res.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch profit data", error);
+      }
+    };
 
-  const stakeholderStats = [
-    {
-      title: "Total Profit",
-      value: `$${totalProfit.toLocaleString()}`,
-      bg: "#16a34a",
-    },
-    {
-      title: "Total Budget",
-      value: `$${totalBudget.toLocaleString()}`,
-      bg: "#2563eb",
-    },
-    {
-      title: "Total Expenditure",
-      value: `$${totalExpenditure.toLocaleString()}`,
-      bg: "#7c3aed",
-    },
-    {
-      title: "Avg. Completion",
-      value: `${avgCompletion}%`,
-      bg: "#f59e0b",
-    },
-  ];
+    fetchProfitData();
+  }, []);
+
+  const calcStats = () => {
+    const totalBudget = projects.reduce((sum, p) => sum + p.project.value, 0);
+    const totalExpense = projects.reduce((sum, p) => sum + p.project.totalExpense, 0);
+    const totalProfit = totalBudget - totalExpense;
+    const avgCompletion = Math.round((projects.length * 100) / projects.length); // placeholder if no completion %
+
+    return [
+      { title: "Total Profit", value: `$${totalProfit.toLocaleString()}`, bg: "#16a34a" },
+      { title: "Total Budget", value: `$${totalBudget.toLocaleString()}`, bg: "#2563eb" },
+      { title: "Total Expenditure", value: `$${totalExpense.toLocaleString()}`, bg: "#7c3aed" },
+      { title: "Avg. Completion", value: `${avgCompletion}%`, bg: "#f59e0b" },
+    ];
+  };
+
+  const stakeholderStats = calcStats();
 
   return (
     <div className="flex min-h-screen bg-[#f4f7fe]">
-      <div className="w-64 bg-[#0f1b42] text-white">
+      <aside className="w-64 bg-[#0f1b42] text-white">
         <Sidebar />
-      </div>
+      </aside>
 
-      <div className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col">
         <Navbar />
         <div className="p-6">
           <h1 className="text-2xl font-bold mb-6 text-[#1e1e1e]">Profit Distribution</h1>
 
-          {/* Stats */}
+          {/* Stat Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {stakeholderStats.map((stat, index) => (
               <div
@@ -117,25 +74,17 @@ const ProfitDistribution = () => {
             ))}
           </div>
 
-          {/* Project Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {stakeholderCards.map((card, index) => {
-              const profit = card.budget - card.expenditure;
-
-              const stakeholderNames = Object.entries(card.stakeholderData).map(
-                ([, { name }]) => name
-              );
-
-              const stakeholderAmounts = Object.entries(card.stakeholderData).map(
-                ([, { percentage }]) => Math.round((percentage / 100) * profit)
-              );
+          {/* Project Profit Shares */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projects.map((item, index) => {
+              const { project, stakeholderProfits } = item;
 
               const barData = {
-                labels: stakeholderNames,
+                labels: stakeholderProfits.map((s) => s.name),
                 datasets: [
                   {
                     label: "Profit Share ($)",
-                    data: stakeholderAmounts,
+                    data: stakeholderProfits.map((s) => parseFloat(s.profit)),
                     backgroundColor: "#3b82f6",
                     borderRadius: 6,
                     barThickness: 30,
@@ -147,29 +96,23 @@ const ProfitDistribution = () => {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                  legend: {
-                    display: false,
-                  },
+                  legend: { display: false },
                   tooltip: {
                     callbacks: {
-                      label: (context) => `$${context.parsed.y.toLocaleString()}`,
+                      label: (ctx) => `$${ctx.parsed.y.toLocaleString()}`,
                     },
                   },
                 },
                 scales: {
                   x: {
-                    ticks: {
-                      color: "#4b5563",
-                    },
-                    grid: {
-                      display: false,
-                    },
+                    ticks: { color: "#4b5563" },
+                    grid: { display: false },
                   },
                   y: {
                     beginAtZero: true,
                     ticks: {
                       color: "#4b5563",
-                      callback: (value) => `$${value.toLocaleString()}`,
+                      callback: (v) => `$${v.toLocaleString()}`,
                     },
                     grid: {
                       borderDash: [4, 2],
@@ -182,26 +125,23 @@ const ProfitDistribution = () => {
               return (
                 <div
                   key={index}
-                  className="bg-white rounded-xl p-4 shadow space-y-4 h-[440px] overflow-hidden flex flex-col justify-between"
+                  className="bg-white rounded-xl p-4 shadow space-y-2 h-[400px] flex flex-col justify-between"
                 >
                   <ProjectCard
-                    projectName={card.projectName}
-                    price={card.price}
-                    completion={card.completion}
-                    userImage={card.userImage}
+                    projectName={project.name}
+                    price={project.value}
+                    completion={100} // Or fetch from backend if available
+                    userImage="https://randomuser.me/api/portraits/lego/2.jpg"
                   />
-
-                  <div className="flex-1 flex items-center justify-center">
-                    <div className="w-full h-48 px-4">
-                      <Bar data={barData} options={barOptions} />
-                    </div>
+                  <div className="w-full h-48 px-2">
+                    <Bar data={barData} options={barOptions} />
                   </div>
                 </div>
               );
             })}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

@@ -8,9 +8,11 @@ import ProjectManagement from './pages/ProjectManage'
 import FinanceTracker from './pages/ProfitDistribution'
 import FinanceDashboard from './pages/DashboradFiance'
 import ProjectFinance from './pages/ProjectFinance'
+import { SearchProvider } from './context/searchContext'
 
 function App() {
   return (
+    <SearchProvider>
     <Router>
       {/* You can uncomment Sidebar and if you want it on all pages */}
       {/* <Sidebar /> */}
@@ -24,6 +26,7 @@ function App() {
 
       </Routes>
     </Router>
+    </SearchProvider>
   )
 }
 
