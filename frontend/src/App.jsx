@@ -9,6 +9,8 @@ import FinanceTracker from './pages/ProfitDistribution'
 import FinanceDashboard from './pages/DashboradFiance'
 import ProjectFinance from './pages/ProjectFinance'
 import { SearchProvider } from './context/searchContext'
+import Login from './auth/Login'
+import SignUp from './auth/Singup'
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/stakeholders" element={<Stakeholders />} />
+        <Route path="/singup" element={<SignUp />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/projects" element={<ProjectManagement />} />
         <Route path="/financials" element={<FinanceDashboard/>} />
         <Route path="/profit-distribution" element={<FinanceTracker />} />

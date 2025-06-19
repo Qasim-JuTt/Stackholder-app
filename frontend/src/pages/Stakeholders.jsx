@@ -5,16 +5,13 @@ import Sidebar from "../components/Sidebar";
 import Pagination from "../components/Pagination";
 import InputField from "../components/InputField";
 import Navbar from "../components/Navbar";
-      const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl = import.meta.env.VITE_API_URL;
 
 const roleColors = {
   Developer: "text-blue-600",
-  Designer: "text-purple-600",
-  "Backend Developer": "text-green-600",
-  "Product Manager": "text-yellow-600",
-  "QA Engineer": "text-red-600",
-  DevOps: "text-indigo-600",
-  Marketing: "text-pink-600",
+  Client: "text-yellow-600",
+  Investor: "text-green-600",
+  Marketer: "text-pink-600",
 };
 
 const shareColor = (percentage) => {
@@ -85,21 +82,16 @@ const Stakeholders = () => {
   const handleSave = () => {
     if (modalData._id) {
       axios
-        .put(
-          `${apiUrl}/api/stakeholders/${modalData._id}`,
-          modalData
-        )
+        .put(`${apiUrl}/api/stakeholders/${modalData._id}`, modalData)
         .then(() => {
           fetchStakeholders();
           setModalOpen(false);
         });
     } else {
-      axios
-        .post(`${apiUrl}/api/stakeholders`, modalData)
-        .then(() => {
-          fetchStakeholders();
-          setModalOpen(false);
-        });
+      axios.post(`${apiUrl}/api/stakeholders`, modalData).then(() => {
+        fetchStakeholders();
+        setModalOpen(false);
+      });
     }
   };
 
@@ -205,7 +197,6 @@ const Stakeholders = () => {
             )}
           </div>
 
-          {/* ✅ Conditionally show pagination only when results are found */}
           {filteredStakeholders.length > 0 && (
             <div className="mt-6">
               <Pagination
@@ -220,46 +211,71 @@ const Stakeholders = () => {
         </main>
       </div>
 
+      {/* Compact Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-2xl bg-white rounded-3xl p-8 shadow-2xl animate-fadeIn">
-            <div className="flex justify-between items-center border-b pb-4">
-              <h2 className="text-2xl font-bold text-indigo-700">
+        <div className="fixed inset-0 z-50 flex  items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-lg bg-white rounded-2xl px-8 py-4 shadow-2xl animate-fadeIn">
+            <div className="flex justify-between items-center border-b pb-3">
+              <h2 className="text-xl font-semibold text-indigo-700">
                 {modalData._id ? "Edit" : "Add"} Stakeholder
               </h2>
               <button
                 onClick={() => setModalOpen(false)}
-                className="text-gray-500 hover:text-red-500 text-2xl"
+                className="text-gray-500 hover:text-red-500 text-xl"
               >
                 &times;
               </button>
             </div>
 
-            <div className="grid gap-5 mt-6">
-              <InputField
-                placeholder="Name"
-                value={modalData.name}
-                onChange={(e) =>
-                  setModalData({ ...modalData, name: e.target.value })
-                }
-              />
-              <InputField
-                placeholder="Email"
-                type="email"
-                value={modalData.email}
-                onChange={(e) =>
-                  setModalData({ ...modalData, email: e.target.value })
-                }
-              />
-              <InputField
-                placeholder="Role"
-                value={modalData.role}
-                onChange={(e) =>
-                  setModalData({ ...modalData, role: e.target.value })
-                }
-              />
+            <div className="grid gap-4 mt-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Name
+                </label>
+                <InputField
+                  placeholder="Name"
+                  value={modalData.name}
+                  onChange={(e) =>
+                    setModalData({ ...modalData, name: e.target.value })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Email
+                </label>
+                <InputField
+                  placeholder="Email"
+                  type="email"
+                  value={modalData.email}
+                  onChange={(e) =>
+                    setModalData({ ...modalData, email: e.target.value })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Role
+                </label>
+                <select
+                  value={modalData.role}
+                  onChange={(e) =>
+                    setModalData({ ...modalData, role: e.target.value })
+                  }
+                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                >
+                  <option value="">Select a role</option>
+                  <option value="Developer">Developer</option>
+                  <option value="Client">Client</option>
+                  <option value="Investor">Investor</option>
+                  <option value="Marketer">Marketer</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
                   Project
                 </label>
                 <select
@@ -267,7 +283,7 @@ const Stakeholders = () => {
                   onChange={(e) =>
                     setModalData({ ...modalData, project: e.target.value })
                   }
-                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                 >
                   <option value="">Select a project</option>
                   {projectOptions.map((p) => (
@@ -277,19 +293,26 @@ const Stakeholders = () => {
                   ))}
                 </select>
               </div>
-              <InputField
-                placeholder="Responsibilities"
-                textarea
-                value={modalData.responsibilities}
-                onChange={(e) =>
-                  setModalData({
-                    ...modalData,
-                    responsibilities: e.target.value,
-                  })
-                }
-              />
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Responsibilities
+                </label>
+                <InputField
+                  placeholder="Responsibilities"
+                  textarea
+                  value={modalData.responsibilities}
+                  onChange={(e) =>
+                    setModalData({
+                      ...modalData,
+                      responsibilities: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Share:{" "}
                   <span className="text-indigo-600">{modalData.share}%</span>
                 </label>
@@ -306,16 +329,16 @@ const Stakeholders = () => {
               </div>
             </div>
 
-            <div className="flex justify-end gap-4 pt-6 border-t mt-8">
+            <div className="flex justify-end gap-3 pt-4 border-t mt-6">
               <button
                 onClick={() => setModalOpen(false)}
-                className="px-6 py-2 text-gray-700 border rounded-lg hover:bg-gray-100"
+                className="px-4 py-1.5 text-sm text-gray-700 border rounded-lg hover:bg-gray-100"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
-                className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                className="px-4 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
               >
                 Save
               </button>
