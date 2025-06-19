@@ -11,6 +11,7 @@ import ProjectFinance from './pages/ProjectFinance'
 import { SearchProvider } from './context/searchContext'
 import Login from './auth/Login'
 import SignUp from './auth/Singup'
+import NotificationComponent from './components/Notification'
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="/financials" element={<FinanceDashboard/>} />
         <Route path="/profit-distribution" element={<FinanceTracker />} />
         <Route path="/project-finance" element={<ProjectFinance />} />
+        <Route path="/notification" element={<NotificationComponent />} />
 
       </Routes>
     </Router>

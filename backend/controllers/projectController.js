@@ -135,23 +135,37 @@ export const getAllProjectsWithProfitDistribution = async (req, res) => {
       // 4. Get stakeholders for this project
       const stakeholders = await Stakeholder.find({ project: project._id });
 
-      // 5. Calculate individual profit share (only name, share, profit)
-      const stakeholderProfits = stakeholders.map((stakeholder) => ({
-        name: stakeholder.name,
-        share: stakeholder.share,
-        profit: ((stakeholder.share / 100) * profit).toFixed(2),
-      }));
+      // 5. Calculate total share
+      const totalShare = stakeholders.reduce((sum, s) => sum + s.share, 0);
 
-      // 6. Add project info and profit distribution to result array
+      let stakeholderProfits = [];
+
+      // 6. Only distribute profit if total share == 100
+      if (totalShare === 100) {
+        stakeholderProfits = stakeholders.map((stakeholder) => ({
+          name: stakeholder.name,
+          share: stakeholder.share,
+          profit: ((stakeholder.share / 100) * profit).toFixed(2),
+        }));
+      } else {
+        stakeholderProfits = stakeholders.map((stakeholder) => ({
+          name: stakeholder.name,
+          share: stakeholder.share,
+          profit: "0.00", // No profit if total share != 100
+        }));
+      }
+
+      // 7. Add project info and profit distribution to result array
       result.push({
         project: {
           id: project._id,
           name: project.name,
           value: project.value,
           totalExpense,
-          profit: profit.toFixed(2)
+          profit: totalShare === 100 ? profit.toFixed(2) : "0.00"
         },
-        stakeholderProfits
+        stakeholderProfits,
+        totalShare
       });
     }
 
@@ -162,6 +176,7 @@ export const getAllProjectsWithProfitDistribution = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 // Search projects by exact word match only (case-insensitive)
 export const searchProjects = async (req, res) => {
