@@ -5,7 +5,8 @@ import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 import Pagination from '../components/Pagination';
 import InputField from '../components/InputField';
-      const apiUrl = import.meta.env.VITE_API_URL;
+
+const apiUrl = import.meta.env.VITE_API_URL;
 
 const initialModalData = {
   id: '',
@@ -149,12 +150,44 @@ const ProjectManagement = () => {
             </div>
 
             <div className="space-y-4">
-              <InputField type="text" placeholder="Project Name" value={modalData.name} onChange={e => setModalData({ ...modalData, name: e.target.value })} />
-              <InputField type="text" placeholder="Description" textarea value={modalData.description} onChange={e => setModalData({ ...modalData, description: e.target.value })} />
-              <InputField type="number" placeholder="Value ($)" value={modalData.value} onChange={e => setModalData({ ...modalData, value: Number(e.target.value) })} />
               <div>
-                <label className="block text-sm font-medium text-gray-700">Completion: {modalData.completion}%</label>
-                <input type="range" min="0" max="100" value={modalData.completion} onChange={e => setModalData({ ...modalData, completion: parseInt(e.target.value, 10) })} className="w-full h-2 bg-gray-200 rounded-lg" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
+                <InputField
+                  type="text"
+                  placeholder="Project Name"
+                  value={modalData.name}
+                  onChange={e => setModalData({ ...modalData, name: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <InputField
+                  type="text"
+                  placeholder="Description"
+                  textarea
+                  value={modalData.description}
+                  onChange={e => setModalData({ ...modalData, description: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Value ($)</label>
+                <InputField
+                  type="number"
+                  placeholder="Value ($)"
+                  value={modalData.value}
+                  onChange={e => setModalData({ ...modalData, value: Number(e.target.value) })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Completion: {modalData.completion}%</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={modalData.completion}
+                  onChange={e => setModalData({ ...modalData, completion: parseInt(e.target.value, 10) })}
+                  className="w-full h-2 bg-gray-200 rounded-lg"
+                />
               </div>
             </div>
 

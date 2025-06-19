@@ -27,6 +27,7 @@ const Stakeholders = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [stakeholders, setStakeholders] = useState([]);
   const [projectOptions, setProjectOptions] = useState([]);
+  const [availableShare, setAvailableShare] = useState(100);
   const [modalData, setModalData] = useState({
     name: "",
     email: "",
@@ -64,6 +65,7 @@ const Stakeholders = () => {
 
   const handleEdit = (stakeholder) => {
     setModalData({ ...stakeholder, project: stakeholder.project._id });
+    fetchAvailableShare(stakeholder.project._id);
     setModalOpen(true);
   };
 
@@ -76,23 +78,19 @@ const Stakeholders = () => {
       responsibilities: "",
       project: "",
     });
+    setAvailableShare(100);
     setModalOpen(true);
   };
 
   const handleSave = () => {
-    if (modalData._id) {
-      axios
-        .put(`${apiUrl}/api/stakeholders/${modalData._id}`, modalData)
-        .then(() => {
-          fetchStakeholders();
-          setModalOpen(false);
-        });
-    } else {
-      axios.post(`${apiUrl}/api/stakeholders`, modalData).then(() => {
-        fetchStakeholders();
-        setModalOpen(false);
-      });
-    }
+    const request = modalData._id
+      ? axios.put(`${apiUrl}/api/stakeholders/${modalData._id}`, modalData)
+      : axios.post(`${apiUrl}/api/stakeholders`, modalData);
+
+    request.then(() => {
+      fetchStakeholders();
+      setModalOpen(false);
+    });
   };
 
   const handleDelete = (id) => {
@@ -103,6 +101,24 @@ const Stakeholders = () => {
     }
   };
 
+  const fetchAvailableShare = async (projectId) => {
+    // alert(projectId)
+    if (!projectId) return setAvailableShare(100);
+
+    try {
+      const res = await axios.get(`${apiUrl}/api/projects/${projectId}/available-share`);
+      const share = res.data.availableShare;
+      setAvailableShare(share);
+
+      if (modalData.share > share) {
+        setModalData((prev) => ({ ...prev, share }));
+      }
+    } catch (error) {
+      console.error("Failed to fetch available share", error);
+      setAvailableShare(100);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-gray-50">
       <Sidebar />
@@ -110,9 +126,7 @@ const Stakeholders = () => {
         <Navbar />
         <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
           <div className="flex justify-between items-center flex-wrap gap-4">
-            <h1 className="text-3xl font-bold text-indigo-600">
-              Manage Stakeholders
-            </h1>
+            <h1 className="text-3xl font-bold text-indigo-600">Manage Stakeholders</h1>
             <button
               onClick={handleAdd}
               className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
@@ -131,19 +145,13 @@ const Stakeholders = () => {
                 <table className="min-w-full text-sm">
                   <thead className="text-gray-500 border-b">
                     <tr>
-                      {[
-                        "Name",
-                        "Email",
-                        "Role",
-                        "Responsibilities",
-                        "Project",
-                        "Share",
-                        "Actions",
-                      ].map((h, i) => (
-                        <th key={i} className="py-3 pr-4 text-left">
-                          {h}
-                        </th>
-                      ))}
+                      {["Name", "Email", "Role", "Responsibilities", "Project", "Share", "Actions"].map(
+                        (h, i) => (
+                          <th key={i} className="py-3 pr-4 text-left">
+                            {h}
+                          </th>
+                        )
+                      )}
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -152,23 +160,15 @@ const Stakeholders = () => {
                         <td className="py-4 pr-4 font-medium">{stk.name}</td>
                         <td className="py-4 pr-4">{stk.email}</td>
                         <td className="py-4 pr-4">
-                          <span
-                            className={`font-medium ${roleColors[stk.role]}`}
-                          >
-                            {stk.role}
-                          </span>
+                          <span className={`font-medium ${roleColors[stk.role]}`}>{stk.role}</span>
                         </td>
-                        <td className="py-4 pr-4 text-gray-600">
-                          {stk.responsibilities}
-                        </td>
+                        <td className="py-4 pr-4 text-gray-600">{stk.responsibilities}</td>
                         <td className="py-4 pr-4">{stk.project?.name}</td>
                         <td className="py-4 pr-4">
                           <div className="flex items-center">
                             <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
                               <div
-                                className={`h-2.5 rounded-full ${shareColor(
-                                  stk.share
-                                )}`}
+                                className={`h-2.5 rounded-full ${shareColor(stk.share)}`}
                                 style={{ width: `${stk.share}%` }}
                               ></div>
                             </div>
@@ -201,9 +201,7 @@ const Stakeholders = () => {
             <div className="mt-6">
               <Pagination
                 currentPage={currentPage}
-                totalPages={Math.ceil(
-                  filteredStakeholders.length / stakeholdersPerPage
-                )}
+                totalPages={Math.ceil(filteredStakeholders.length / stakeholdersPerPage)}
                 onPageChange={setCurrentPage}
               />
             </div>
@@ -211,9 +209,9 @@ const Stakeholders = () => {
         </main>
       </div>
 
-      {/* Compact Modal */}
+      {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex  items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="w-full max-w-lg bg-white rounded-2xl px-8 py-4 shadow-2xl animate-fadeIn">
             <div className="flex justify-between items-center border-b pb-3">
               <h2 className="text-xl font-semibold text-indigo-700">
@@ -228,42 +226,26 @@ const Stakeholders = () => {
             </div>
 
             <div className="grid gap-4 mt-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Name
-                </label>
-                <InputField
-                  placeholder="Name"
-                  value={modalData.name}
-                  onChange={(e) =>
-                    setModalData({ ...modalData, name: e.target.value })
-                  }
-                />
-              </div>
+              <InputField
+                label="Name"
+                placeholder="Name"
+                value={modalData.name}
+                onChange={(e) => setModalData({ ...modalData, name: e.target.value })}
+              />
+
+              <InputField
+                label="Email"
+                type="email"
+                placeholder="Email"
+                value={modalData.email}
+                onChange={(e) => setModalData({ ...modalData, email: e.target.value })}
+              />
 
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Email
-                </label>
-                <InputField
-                  placeholder="Email"
-                  type="email"
-                  value={modalData.email}
-                  onChange={(e) =>
-                    setModalData({ ...modalData, email: e.target.value })
-                  }
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Role
-                </label>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Role</label>
                 <select
                   value={modalData.role}
-                  onChange={(e) =>
-                    setModalData({ ...modalData, role: e.target.value })
-                  }
+                  onChange={(e) => setModalData({ ...modalData, role: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                 >
                   <option value="">Select a role</option>
@@ -275,14 +257,14 @@ const Stakeholders = () => {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Project
-                </label>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Project</label>
                 <select
                   value={modalData.project}
-                  onChange={(e) =>
-                    setModalData({ ...modalData, project: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const projectId = e.target.value;
+                    setModalData({ ...modalData, project: projectId });
+                    fetchAvailableShare(projectId);
+                  }}
                   className="w-full border border-gray-300 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                 >
                   <option value="">Select a project</option>
@@ -294,32 +276,25 @@ const Stakeholders = () => {
                 </select>
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Responsibilities
-                </label>
-                <InputField
-                  placeholder="Responsibilities"
-                  textarea
-                  value={modalData.responsibilities}
-                  onChange={(e) =>
-                    setModalData({
-                      ...modalData,
-                      responsibilities: e.target.value,
-                    })
-                  }
-                />
-              </div>
+              <InputField
+                label="Responsibilities"
+                textarea
+                placeholder="Responsibilities"
+                value={modalData.responsibilities}
+                onChange={(e) =>
+                  setModalData({ ...modalData, responsibilities: e.target.value })
+                }
+              />
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Share:{" "}
-                  <span className="text-indigo-600">{modalData.share}%</span>
+                  Share: <span className="text-indigo-600">{modalData.share}%</span>
+                  <span className="text-sm text-gray-500 ml-2">(Available: {availableShare}%)</span>
                 </label>
                 <input
                   type="range"
                   min="0"
-                  max="100"
+                  max={availableShare}
                   value={modalData.share}
                   onChange={(e) =>
                     setModalData({ ...modalData, share: +e.target.value })

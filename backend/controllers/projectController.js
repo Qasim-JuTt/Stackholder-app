@@ -186,3 +186,25 @@ export const searchProjects = async (req, res) => {
 };
 
 
+// GET /api/projects/:id/available-share
+export const getAvailableShare = async (req, res) => {
+  try {
+    // Find all stakeholders for the project
+    const stakeholders = await Stakeholder.find({ project: req.params.id });
+
+    if (!stakeholders || stakeholders.length === 0) {
+      // No stakeholders yet, so 100% share is available
+      return res.json({ availableShare: 100 });
+    }
+
+    // Sum up all stakeholder shares
+    const totalShare = stakeholders.reduce((sum, s) => sum + (s.share || 0), 0);
+    const availableShare = Math.max(100 - totalShare, 0);
+
+    res.json({ availableShare });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
+  }
+};
+

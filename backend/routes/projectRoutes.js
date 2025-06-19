@@ -8,7 +8,8 @@ import {
 getProjectsWithStakeholders ,
 getProjectsWithTotalExpense,
 getAllProjectsWithProfitDistribution,
-searchProjects
+searchProjects,
+getAvailableShare
 } from '../controllers/projectController.js';
 
 const router = express.Router();
@@ -22,6 +23,10 @@ router.get('/with-stakeholders', getProjectsWithStakeholders);
 router.get('/expenses', getProjectsWithTotalExpense);
 router.get('/profit-distribution', getAllProjectsWithProfitDistribution);
 router.get('/search', searchProjects); // GET /api/projects/search?query=...
+router.get('/share/:id', searchProjects); // GET /api/projects/search?query=...
+router.get("/:id/available-share", getAvailableShare);
+
+
 
 
 
