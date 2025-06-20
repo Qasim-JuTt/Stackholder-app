@@ -28,23 +28,34 @@ const Dashboard = () => {
     { title: "New Stakeholders", value: stakeholders.new, bg: "#f59e0b" },
   ];
 
-  useEffect(() => {
-    const fetchProjectsWithStakeholders = async () => {
-      try {
-        const response = await axios.get(`${apiUrl}/api/projects/with-stakeholders`);
-        const filteredProjects = response.data.filter(
-          (project) => project.stakeholders && project.stakeholders.length > 0
-        );
-        setProjectsData(filteredProjects);
-      } catch (error) {
-        console.error("Failed to fetch projects:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+ useEffect(() => {
+  const fetchProjectsWithStakeholders = async () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || !user.id) {
+      console.error("User ID not found in localStorage");
+      return;
+    }
 
-    fetchProjectsWithStakeholders();
-  }, []);
+    try {
+      const response = await axios.get(
+        `${apiUrl}/api/projects/with-stakeholders?userId=${user.id}`
+      );
+
+      const filteredProjects = response.data.filter(
+        (project) => project.stakeholders && project.stakeholders.length > 0
+      );
+
+      setProjectsData(filteredProjects);
+    } catch (error) {
+      console.error("Failed to fetch projects:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchProjectsWithStakeholders();
+}, []);
+
 
   const getStakeholderSummary = (stakeholders = []) => {
     const summary = {};

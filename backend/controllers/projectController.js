@@ -89,7 +89,6 @@ export const getProjectName = async (req, res) => {
 
 
 // Get projects with populated stakeholders
-// Get projects with stakeholders
 export const getProjectsWithStakeholders = async (req, res) => {
   const { userId } = req.query;
   if (!userId) return res.status(400).json({ message: "Missing userId in query" });
@@ -104,18 +103,23 @@ export const getProjectsWithStakeholders = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch projects with stakeholders" });
   }
 };
-
-// Get projects with total expense
 export const getProjectsWithTotalExpense = async (req, res) => {
   const { userId } = req.query;
-  if (!userId) return res.status(400).json({ message: "Missing userId in query" });
+
+  if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).json({ message: "Invalid or missing userId" });
+  }
 
   try {
     const projects = await Project.aggregate([
-      { $match: { user: new mongoose.Types.ObjectId(userId) } },
+      {
+        $match: {
+          user: new mongoose.Types.ObjectId(userId),
+        },
+      },
       {
         $lookup: {
-          from: "finances",
+          from: "finances", // 👈 Ensure this matches your actual collection name
           localField: "_id",
           foreignField: "project",
           as: "finances",
@@ -151,12 +155,16 @@ export const getProjectsWithTotalExpense = async (req, res) => {
       },
     ]);
 
+    console.log("Projects found:", projects.length);
     res.status(200).json(projects);
   } catch (error) {
-    res.status(500).json({ message: "Server Error", error: error.message });
+    console.error("Aggregation error:", error);
+    res.status(500).json({
+      message: "Failed to fetch projects with total expense",
+      error: error.message,
+    });
   }
 };
-
 
 // Controller to get all projects with profit distribution and expenditure details
 export const getAllProjectsWithProfitDistribution = async (req, res) => {
