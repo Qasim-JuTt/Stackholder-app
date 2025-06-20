@@ -1,6 +1,8 @@
 import Project from '../models/Project.js';
 import Finance from '../models/ProjectFinance.js';
 import Stakeholder from '../models/Stakeholder.js';
+import Notification from '../models/Notification.js';
+
 
 export const getProjects = async (req, res) => {
   try {
@@ -12,15 +14,37 @@ export const getProjects = async (req, res) => {
 };
 
 
+// export const createProject = async (req, res) => {
+//   try {
+//     const newProject = new Project(req.body);
+//     const saved = await newProject.save();
+//     res.status(201).json(saved);
+//   } catch (err) {
+//     res.status(400).json({ error: 'Failed to create project' });
+//   }
+// };
 export const createProject = async (req, res) => {
   try {
     const newProject = new Project(req.body);
     const saved = await newProject.save();
-    res.status(201).json(saved);
+
+    // Add a notification after successful project creation
+    const notification = new Notification({
+      message: `🆕 Project "${saved.name}" created successfully.`,
+      timestamp: new Date().toLocaleString(),
+    });
+    await notification.save();
+
+    res.status(201).json({
+      message: ' Project created successfully',
+      project: saved,
+    });
   } catch (err) {
+    console.error('Error creating project:', err);
     res.status(400).json({ error: 'Failed to create project' });
   }
 };
+
 
 export const updateProject = async (req, res) => {
   try {

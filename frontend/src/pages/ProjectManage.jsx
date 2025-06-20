@@ -5,6 +5,7 @@ import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 import Pagination from '../components/Pagination';
 import InputField from '../components/InputField';
+import { useNotifications } from '../context/NotificationContext'; // ✅ Notification context
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -28,6 +29,8 @@ const ProjectManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalData, setModalData] = useState(initialModalData);
 
+  const { addNotification } = useNotifications(); // ✅ Use context
+
   useEffect(() => {
     const fetchProjects = async () => {
       try {
@@ -35,10 +38,11 @@ const ProjectManagement = () => {
         setProjects(res.data);
       } catch (err) {
         console.error('Failed to fetch projects', err);
+        addNotification('❌ Failed to load projects');
       }
     };
     fetchProjects();
-  }, []);
+  }, [addNotification]);
 
   const filtered = projects.filter(p =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -51,24 +55,29 @@ const ProjectManagement = () => {
     try {
       if (!modalData.id) {
         const res = await axios.post(`${apiUrl}/api/projects/create`, modalData);
-        setProjects([...projects, res.data]);
+        setProjects([...projects, res.data.project || res.data]);
+        addNotification(res.data.message || '✅ Project created successfully');
       } else {
         const res = await axios.put(`${apiUrl}/api/projects/update/${modalData.id}`, modalData);
-        setProjects(projects.map(p => (p._id === modalData.id ? res.data : p)));
+        setProjects(projects.map(p => (p._id === modalData.id ? res.data.project || res.data : p)));
+        addNotification(res.data.message || '✏️ Project updated successfully');
       }
       setIsModalOpen(false);
       setModalData(initialModalData);
     } catch (err) {
+      addNotification('❌ Failed to save project');
       console.error('Error saving/updating project:', err);
     }
   };
 
   const handleDelete = async (id) => {
-    if (confirm(`Are you sure you want to delete this project? ${id}`)) {
+    if (confirm(`Are you sure you want to delete this project?`)) {
       try {
         await axios.delete(`${apiUrl}/api/projects/delete/${id}`);
         setProjects(projects.filter(p => p._id !== id));
+        addNotification('🗑️ Project deleted successfully');
       } catch (err) {
+        addNotification('❌ Failed to delete project');
         console.error('Failed to delete project:', err);
       }
     }

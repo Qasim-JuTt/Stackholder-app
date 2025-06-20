@@ -73,7 +73,7 @@ const Dashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col pr-72"> {/* Reserve space for notification */}
+      <div className="flex-1 flex flex-col pr-60"> {/* Reserve space for notification */}
         <Navbar />
 
         <div className="p-6">
