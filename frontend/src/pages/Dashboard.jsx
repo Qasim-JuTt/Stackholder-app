@@ -5,12 +5,13 @@ import Navbar from "../components/Navbar";
 import ProjectCard from "./ProjectCard";
 import StakeholderCard from "../components/StackholdCard";
 import { useSearch } from "../context/searchContext";
-      const apiUrl = import.meta.env.VITE_API_URL;
+import Notifications from "../components/Notification";
+
+const apiUrl = import.meta.env.VITE_API_URL;
 
 const Dashboard = () => {
   const [projectsData, setProjectsData] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const { searchTerm, searchResults } = useSearch();
 
   const [stakeholders] = useState({
@@ -45,7 +46,6 @@ const Dashboard = () => {
     fetchProjectsWithStakeholders();
   }, []);
 
-  // Helper to summarize stakeholder data by role
   const getStakeholderSummary = (stakeholders = []) => {
     const summary = {};
     stakeholders.forEach(({ role, name, share }) => {
@@ -58,7 +58,6 @@ const Dashboard = () => {
     return summary;
   };
 
-  // ✅ Updated logic to show only matching results
   const displayedProjects =
     searchTerm.trim() !== '' && Array.isArray(searchResults)
       ? searchResults
@@ -67,20 +66,20 @@ const Dashboard = () => {
       : [];
 
   return (
-    <div className="flex min-h-screen bg-[#f4f7fe]">
+    <div className="flex min-h-screen bg-[#f4f7fe] relative">
       {/* Sidebar */}
       <div className="w-64 bg-[#0f1b42] text-white">
         <Sidebar />
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col pr-72"> {/* Reserve space for notification */}
         <Navbar />
 
         <div className="p-6">
           <h1 className="text-2xl font-bold mb-6 text-[#1e1e1e]">Dashboard</h1>
 
-          {/* Stats Section */}
+          {/* Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {stakeholderStats.map((stat, index) => (
               <div
@@ -94,7 +93,7 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* Projects with Stakeholders */}
+          {/* Projects */}
           {loading ? (
             <p>Loading projects and stakeholders...</p>
           ) : displayedProjects.length === 0 ? (
@@ -124,6 +123,11 @@ const Dashboard = () => {
             </div>
           )}
         </div>
+      </div>
+
+      {/* 📍 Notification - fixed to right side */}
+<div className="w-72 fixed top-0 right-0 z-50 h-screen">
+        <Notifications />
       </div>
     </div>
   );
