@@ -113,7 +113,6 @@ const Dashboard = () => {
                     projectName={project.name}
                     price={project.value || 0}
                     completion={project.completion || 0}
-                    userImage={`${apiUrl}/api/portraits/lego/1.jpg`}
                   />
                   <StakeholderCard
                     stakeholderData={getStakeholderSummary(project.stakeholders)}

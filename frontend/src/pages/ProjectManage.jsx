@@ -107,9 +107,9 @@ const ProjectManagement = () => {
                 <table className="min-w-full text-sm">
                   <thead className="text-left text-gray-500 border-b">
                     <tr>
-                      <th className="py-3 pr-4">Name</th>
-                      <th className="py-3 pr-4">Description</th>
-                      <th className="py-3 pr-4">Value</th>
+                      <th className="py-3 pr-4">Project Name</th>
+                      <th className="py-3 pr-4">Project Description</th>
+                      <th className="py-3 pr-4">Project Income</th>
                       <th className="py-3 pr-4">Completion</th>
                       <th className="py-3 pr-4 text-right">Actions</th>
                     </tr>

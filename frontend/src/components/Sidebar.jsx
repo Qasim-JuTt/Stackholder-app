@@ -18,8 +18,8 @@ const Sidebar = () => {
   const menuItems = [
     { name: 'Dashboard', icon: <FaTachometerAlt />, path: '/' },
     { name: 'Projects', icon: <FaProjectDiagram />, path: '/projects' },
-    { name: 'Project Financials', icon: <FaFileExport />, path: '/project-finance' },
     { name: 'Stakeholders', icon: <FaUsers />, path: '/stakeholders' },
+    { name: 'Project Financials', icon: <FaFileExport />, path: '/project-finance' },
     { name: 'Financial Dashboard', icon: <FaWallet />, path: '/financials' },
     { name: 'Profit Distribution', icon: <FaChartPie />, path: '/profit-distribution' },
     // { name: 'Logout', icon: <FaSignOutAlt />, path: '/logout' },

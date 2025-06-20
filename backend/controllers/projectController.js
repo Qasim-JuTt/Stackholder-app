@@ -1,7 +1,8 @@
 import Project from '../models/Project.js';
 import Finance from '../models/ProjectFinance.js';
 import Stakeholder from '../models/Stakeholder.js';
-import Notification from '../models/Notification.js';
+import { createNotification } from '../utils/notificationUtils.js';
+
 
 
 export const getProjects = async (req, res) => {
@@ -29,11 +30,8 @@ export const createProject = async (req, res) => {
     const saved = await newProject.save();
 
     // Add a notification after successful project creation
-    const notification = new Notification({
-      message: `🆕 Project "${saved.name}" created successfully.`,
-      timestamp: new Date().toLocaleString(),
-    });
-    await notification.save();
+    await createNotification('🆕 Project "{name}" created successfully.', saved.name);
+
 
     res.status(201).json({
       message: ' Project created successfully',
@@ -89,6 +87,119 @@ export const getProjectsWithStakeholders = async (req, res) => {
 
 // controllers/projectController.js
 
+// export const getProjectsWithTotalExpense = async (req, res) => {
+//   try {
+//     const projects = await Project.aggregate([
+//       {
+//         $lookup: {
+//           from: 'finances',
+//           localField: '_id',
+//           foreignField: 'project',
+//           as: 'finances'
+//         }
+//       },
+//       {
+//         $addFields: {
+//           totalExpense: {
+//             $sum: {
+//               $map: {
+//                 input: {
+//                   $filter: {
+//                     input: '$finances',
+//                     as: 'f',
+//                     cond: { $eq: ['$$f.type', 'expense'] }
+//                   }
+//                 },
+//                 as: 'e',
+//                 in: '$$e.amount'
+//               }
+//             }
+//           }
+//         }
+//       },
+//       {
+//         $project: {
+//           name: 1,
+//           value: 1,
+//           completion: 1,
+//           totalExpense: 1,
+//           createdAt: 1
+//         }
+//       }
+//     ]);
+
+//     res.status(200).json(projects);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Server Error', error: error.message });
+//   }
+// };
+
+
+// export const getAllProjectsWithProfitDistribution = async (req, res) => {
+//   try {
+//     // 1. Get all projects that have at least one stakeholder
+//     const stakeholderProjects = await Stakeholder.distinct('project');
+//     const projects = await Project.find({ _id: { $in: stakeholderProjects } });
+
+//     const result = [];
+
+//     for (const project of projects) {
+//       // 2. Get total expenses for each project
+//       const expenses = await Finance.aggregate([
+//         { $match: { project: project._id, type: 'expense' } },
+//         { $group: { _id: null, total: { $sum: "$amount" } } }
+//       ]);
+//       const totalExpense = expenses[0]?.total || 0;
+
+//       // 3. Calculate profit
+//       const profit = project.value - totalExpense;
+
+//       // 4. Get stakeholders for this project
+//       const stakeholders = await Stakeholder.find({ project: project._id });
+
+//       // 5. Calculate total share
+//       const totalShare = stakeholders.reduce((sum, s) => sum + s.share, 0);
+
+//       let stakeholderProfits = [];
+
+//       // 6. Only distribute profit if total share == 100
+//       if (totalShare === 100) {
+//         stakeholderProfits = stakeholders.map((stakeholder) => ({
+//           name: stakeholder.name,
+//           share: stakeholder.share,
+//           profit: ((stakeholder.share / 100) * profit).toFixed(2),
+//         }));
+//       } else {
+//         stakeholderProfits = stakeholders.map((stakeholder) => ({
+//           name: stakeholder.name,
+//           share: stakeholder.share,
+//           profit: "0.00", // No profit if total share != 100
+//         }));
+//       }
+
+//       // 7. Add project info and profit distribution to result array
+//       result.push({
+//         project: {
+//           id: project._id,
+//           name: project.name,
+//           value: project.value,
+//           totalExpense,
+//           profit: totalShare === 100 ? profit.toFixed(2) : "0.00"
+//         },
+//         stakeholderProfits,
+//         totalShare
+//       });
+//     }
+
+//     res.json(result);
+
+//   } catch (error) {
+//     console.error("Error fetching project profit distribution:", error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// };
+
+// Controller to get all projects with total expenses
 export const getProjectsWithTotalExpense = async (req, res) => {
   try {
     const projects = await Project.aggregate([
@@ -137,6 +248,7 @@ export const getProjectsWithTotalExpense = async (req, res) => {
 };
 
 
+// Controller to get all projects with profit distribution and expenditure details
 export const getAllProjectsWithProfitDistribution = async (req, res) => {
   try {
     // 1. Get all projects that have at least one stakeholder
@@ -146,25 +258,24 @@ export const getAllProjectsWithProfitDistribution = async (req, res) => {
     const result = [];
 
     for (const project of projects) {
-      // 2. Get total expenses for each project
-      const expenses = await Finance.aggregate([
-        { $match: { project: project._id, type: 'expense' } },
-        { $group: { _id: null, total: { $sum: "$amount" } } }
-      ]);
-      const totalExpense = expenses[0]?.total || 0;
+      // 2. Get all expense transactions related to this project
+      const expenseTransactions = await Finance.find({ project: project._id, type: 'expense' });
 
-      // 3. Calculate profit
-      const profit = project.value - totalExpense;
+      // 3. Calculate total expenditure
+      const totalExpenditure = expenseTransactions.reduce((sum, entry) => sum + entry.amount, 0);
 
-      // 4. Get stakeholders for this project
+      // 4. Calculate profit = value - totalExpenditure
+      const profit = project.value - totalExpenditure;
+
+      // 5. Get stakeholders for this project
       const stakeholders = await Stakeholder.find({ project: project._id });
 
-      // 5. Calculate total share
+      // 6. Calculate total share
       const totalShare = stakeholders.reduce((sum, s) => sum + s.share, 0);
 
       let stakeholderProfits = [];
 
-      // 6. Only distribute profit if total share == 100
+      // 7. If totalShare is 100%, calculate profit distribution
       if (totalShare === 100) {
         stakeholderProfits = stakeholders.map((stakeholder) => ({
           name: stakeholder.name,
@@ -175,19 +286,25 @@ export const getAllProjectsWithProfitDistribution = async (req, res) => {
         stakeholderProfits = stakeholders.map((stakeholder) => ({
           name: stakeholder.name,
           share: stakeholder.share,
-          profit: "0.00", // No profit if total share != 100
+          profit: "0.00",
         }));
       }
 
-      // 7. Add project info and profit distribution to result array
+      // 8. Build final result object
       result.push({
         project: {
           id: project._id,
           name: project.name,
           value: project.value,
-          totalExpense,
-          profit: totalShare === 100 ? profit.toFixed(2) : "0.00"
+          totalExpenditure,
+          profit: totalShare === 100 ? profit.toFixed(2) : "0.00",
         },
+        expenditures: expenseTransactions.map(exp => ({
+          id: exp._id,
+          description: exp.description || '',
+          amount: exp.amount,
+          date: exp.createdAt
+        })),
         stakeholderProfits,
         totalShare
       });
@@ -200,6 +317,8 @@ export const getAllProjectsWithProfitDistribution = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
 
 
 // Search projects by exact word match only (case-insensitive)

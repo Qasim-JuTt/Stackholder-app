@@ -116,7 +116,7 @@ const FinanceDashboard = () => {
 
           {/* Project Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {projects.map((proj, i) => (
+            {projects.map((proj) => (
               <div
                 key={proj._id}
                 className="bg-white rounded-xl p-3 shadow h-[400px] flex flex-col"
@@ -128,7 +128,6 @@ const FinanceDashboard = () => {
                     price={proj.value}
                     budget={proj.value}
                     expenditure={proj.totalExpense}
-                    userImage={`${apiUrl}/api/portraits/lego/${i + 1}.jpg`}
                   />
                 </div>
                 <div className="h-52  ">

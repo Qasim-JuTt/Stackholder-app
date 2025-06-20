@@ -12,7 +12,7 @@ import {
   Legend,
 } from "chart.js";
 import axios from "axios";
-      const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl = import.meta.env.VITE_API_URL;
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -20,10 +20,13 @@ const ProfitDistribution = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
 
+
   useEffect(() => {
     const fetchProfitData = async () => {
       try {
-        const res = await axios.get(`${apiUrl}/api/projects/profit-distribution`); // update URL accordingly
+        const res = await axios.get(
+          `${apiUrl}/api/projects/profit-distribution`
+        ); // update URL accordingly
         setProjects(res.data);
         setLoading(false);
       } catch (error) {
@@ -36,14 +39,29 @@ const ProfitDistribution = () => {
 
   const calcStats = () => {
     const totalBudget = projects.reduce((sum, p) => sum + p.project.value, 0);
-    const totalExpense = projects.reduce((sum, p) => sum + p.project.totalExpense, 0);
+    const totalExpense = projects.reduce(
+      (sum, p) => sum + p.project.totalExpense,
+      0
+    );
     const totalProfit = totalBudget - totalExpense;
     const avgCompletion = Math.round((projects.length * 100) / projects.length); // placeholder if no completion %
 
     return [
-      { title: "Total Profit", value: `$${totalProfit.toLocaleString()}`, bg: "#16a34a" },
-      { title: "Total Budget", value: `$${totalBudget.toLocaleString()}`, bg: "#2563eb" },
-      { title: "Total Expenditure", value: `$${totalExpense.toLocaleString()}`, bg: "#7c3aed" },
+      {
+        title: "Total Profit",
+        value: `$${totalProfit.toLocaleString()}`,
+        bg: "#16a34a",
+      },
+      {
+        title: "Total Budget",
+        value: `$${totalBudget.toLocaleString()}`,
+        bg: "#2563eb",
+      },
+      {
+        title: "Total Expenditure",
+        value: `$${totalExpense.toLocaleString()}`,
+        bg: "#7c3aed",
+      },
       { title: "Avg. Completion", value: `${avgCompletion}%`, bg: "#f59e0b" },
     ];
   };
@@ -59,7 +77,9 @@ const ProfitDistribution = () => {
       <main className="flex-1 flex flex-col">
         <Navbar />
         <div className="p-6">
-          <h1 className="text-2xl font-bold mb-6 text-[#1e1e1e]">Profit Distribution</h1>
+          <h1 className="text-2xl font-bold mb-6 text-[#1e1e1e]">
+            Profit Distribution
+          </h1>
 
           {/* Stat Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -131,9 +151,10 @@ const ProfitDistribution = () => {
                   <ProjectCard
                     projectName={project.name}
                     price={project.value}
-                    completion={100} // Or fetch from backend if available
-                    userImage={`${apiUrl}/api/portraits/lego/2.jpg`}
+                    expense={project.totalExpenditure}
+                    completion={project.completion || 100} // use actual if available
                   />
+
                   <div className="w-full h-48 px-2">
                     <Bar data={barData} options={barOptions} />
                   </div>

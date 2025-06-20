@@ -1,5 +1,7 @@
 // controllers/stakeholderController.js
 import Stakeholder from '../models/Stakeholder.js';
+import { createNotification } from '../utils/notificationUtils.js';
+
 
 export const getAllStakeholders = async (req, res) => {
   try {
@@ -26,13 +28,19 @@ export const getStakeholderById = async (req, res) => {
 export const createStakeholder = async (req, res) => {
   try {
     const newStakeholder = new Stakeholder(req.body);
-    await newStakeholder.save();
-    const populated = await newStakeholder.populate('project', 'name');
+    const saved = await newStakeholder.save(); // Now 'saved' is defined
+
+    const populated = await saved.populate('project', 'name');
+
+    // Now pass the project name to the notification message
+    await createNotification('👥 Stakeholder added to project "{name}"', populated.project.name);
+
     res.status(201).json(populated);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 };
+
 
 export const updateStakeholder = async (req, res) => {
   try {

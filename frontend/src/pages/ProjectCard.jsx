@@ -1,11 +1,15 @@
 import { Check, ArrowUp } from "lucide-react";
 
-const ProjectCard = ({ projectName, completion, userImage, price }) => {
+const ProjectCard = ({ projectName, completion, price, expense }) => {
   const completionColor = (value) => {
     if (value >= 75) return "bg-green-500";
     if (value >= 50) return "bg-yellow-400";
     return "bg-red-500";
   };
+
+  // 👤 Generate random avatar URL inside the component
+  const randomSeed = Math.floor(Math.random() * 10000);
+  const userImage = `https://api.dicebear.com/7.x/avataaars/svg?seed=${randomSeed}`;
 
   return (
     <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300 p-4 w-full max-w-sm">
@@ -21,18 +25,16 @@ const ProjectCard = ({ projectName, completion, userImage, price }) => {
         />
       </div>
 
-      {/* Project Code, Icons & Price */}
-      <div className="flex items-center space-x-3 mb-3">
-        <span className="text-xs bg-blue-100 text-blue-600 px-2 py-[2px] rounded-full font-medium">
-          PROJ-101
-        </span>
-        <div className="bg-green-100 p-1 rounded-full">
-          <Check className="w-4 h-4 text-green-600" />
+      {/* Income (left) and Expense (right) in one row */}
+      <div className="flex justify-between items-center mb-3">
+        <div className="text-left">
+          <p className="text-[11px] text-gray-500">Income</p>
+          <p className="text-sm font-medium text-green-600">${price}</p>
         </div>
-        <div className="bg-orange-100 p-1 rounded-full">
-          <ArrowUp className="w-4 h-4 text-orange-500" />
+        <div className="text-right">
+          <p className="text-[11px] text-gray-500">Expense</p>
+          <p className="text-sm font-medium text-red-500">${expense}</p>
         </div>
-        <span className="text-base font-medium text-gray-800 ml-auto">${price}</span>
       </div>
 
       {/* Progress Bar */}
@@ -51,6 +53,5 @@ const ProjectCard = ({ projectName, completion, userImage, price }) => {
     </div>
   );
 };
-
 
 export default ProjectCard;
