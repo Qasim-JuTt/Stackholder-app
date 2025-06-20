@@ -27,12 +27,10 @@ export const getStakeholderById = async (req, res) => {
 
 export const createStakeholder = async (req, res) => {
   try {
-    const newStakeholder = new Stakeholder(req.body);
-    const saved = await newStakeholder.save(); // Now 'saved' is defined
-
+    const newStakeholder = new Stakeholder(req.body); // includes `user` field
+    const saved = await newStakeholder.save();
     const populated = await saved.populate('project', 'name');
 
-    // Now pass the project name to the notification message
     await createNotification('👥 Stakeholder added to project "{name}"', populated.project.name);
 
     res.status(201).json(populated);
@@ -40,6 +38,7 @@ export const createStakeholder = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
 
 
 export const updateStakeholder = async (req, res) => {

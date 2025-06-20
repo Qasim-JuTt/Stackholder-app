@@ -33,12 +33,21 @@ const AddTransactionModal = ({ open, onClose, editId, refreshData }) => {
       const apiUrl = import.meta.env.VITE_API_URL;
 
   // Fetch project options
-  useEffect(() => {
-    axios
-      .get(`${apiUrl}/api/projects/getName`)
-      .then(res => setProjectOptions(res.data))
-      .catch(err => console.error('Failed to fetch projects:', err));
-  }, []);
+ useEffect(() => {
+  const storedUser = localStorage.getItem("user");
+  if (!storedUser) return;
+
+  const user = JSON.parse(storedUser);
+  const userId = user.id;
+
+  axios
+    .get(`${apiUrl}/api/projects/getName`, {
+      params: { userId }
+    })
+    .then(res => setProjectOptions(res.data))
+    .catch(err => console.error("Failed to fetch projects:", err));
+}, []);
+
 
   // Load transaction data for editing
   useEffect(() => {
@@ -64,30 +73,48 @@ const AddTransactionModal = ({ open, onClose, editId, refreshData }) => {
   }, [editId, open]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const transactionData = {
-      amount: parseFloat(amount),
-      date,
-      category,
-      project,
-      description,
-      type
-    };
+  e.preventDefault();
 
-    try {
-      if (editId) {
-        await axios.put(`${apiUrl}/api/projectfinance/update/${editId}`, transactionData);
-      } else {
-        await axios.post(`${apiUrl}/api/projectfinance/create`, transactionData);
-      }
+  // ✅ Get user from localStorage
+  const storedUser = localStorage.getItem("user");
+  if (!storedUser) {
+    alert("Please login again. User info missing.");
+    return;
+  }
 
-      refreshData();
-      onClose();
-      resetForm();
-    } catch (error) {
-      console.error(editId ? 'Failed to update transaction:' : 'Failed to add transaction:', error);
-    }
+  const userObj = JSON.parse(storedUser);
+  const userId = userObj?.id;
+  if (!userId) {
+    alert("User ID not found. Please login again.");
+    return;
+  }
+
+  // ✅ Include user ID in the payload
+  const transactionData = {
+    amount: parseFloat(amount),
+    date,
+    category,
+    project,
+    description,
+    type,
+    user: userId
   };
+
+  try {
+    if (editId) {
+      await axios.put(`${apiUrl}/api/projectfinance/update/${editId}`, transactionData);
+    } else {
+      await axios.post(`${apiUrl}/api/projectfinance/create`, transactionData);
+    }
+
+    refreshData();
+    onClose();
+    resetForm();
+  } catch (error) {
+    console.error(editId ? 'Failed to update transaction:' : 'Failed to add transaction:', error);
+  }
+};
+
 
   const resetForm = () => {
     setAmount('');

@@ -111,9 +111,11 @@ const Dashboard = () => {
                 >
                   <ProjectCard
                     projectName={project.name}
-                    price={project.value || 0}
-                    completion={project.completion || 0}
+                    price={project.value}
+                    expense={project.totalExpenditure}
+                    completion={project.completion || 100} // use actual if available
                   />
+
                   <StakeholderCard
                     stakeholderData={getStakeholderSummary(project.stakeholders)}
                   />

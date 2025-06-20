@@ -1,4 +1,3 @@
-// models/Project.js
 import mongoose from 'mongoose';
 
 const projectSchema = new mongoose.Schema({
@@ -6,16 +5,15 @@ const projectSchema = new mongoose.Schema({
   description: { type: String },
   value: { type: Number, required: true },
   completion: { type: Number, default: 0 },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // 👈 Add this line
 }, { timestamps: true });
 
-// ✅ Virtual populate
 projectSchema.virtual('stakeholders', {
   ref: 'Stakeholder',
   localField: '_id',
   foreignField: 'project'
 });
 
-// ✅ To include virtuals in JSON output
 projectSchema.set('toObject', { virtuals: true });
 projectSchema.set('toJSON', { virtuals: true });
 

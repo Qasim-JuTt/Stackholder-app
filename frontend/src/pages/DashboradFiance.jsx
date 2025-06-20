@@ -12,7 +12,8 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-      const apiUrl = import.meta.env.VITE_API_URL;
+
+const apiUrl = import.meta.env.VITE_API_URL;
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -33,7 +34,7 @@ const FinanceDashboard = () => {
   }, []);
 
   const totalBudget = projects.reduce((sum, p) => sum + p.value, 0);
-  const totalExpenditure = projects.reduce((sum, p) => sum + p.totalExpense, 0);
+  const totalExpenditure = projects.reduce((sum, p) => sum + p.totalExpenditure, 0);
   const avgCompletion = projects.length
     ? Math.round(projects.reduce((sum, p) => sum + p.completion, 0) / projects.length)
     : 0;
@@ -124,14 +125,13 @@ const FinanceDashboard = () => {
                 <div className="mb-4">
                   <ProjectCard
                     projectName={proj.name}
-                    completion={proj.completion}
                     price={proj.value}
-                    budget={proj.value}
-                    expenditure={proj.totalExpense}
+                    expense={proj.totalExpenditure}
+                    completion={proj.completion || 100}
                   />
                 </div>
-                <div className="h-52  ">
-                  <Bar data={getBarData(proj.value, proj.totalExpense)} options={barOptions} />
+                <div className="h-52">
+                  <Bar data={getBarData(proj.value, proj.totalExpenditure)} options={barOptions} />
                 </div>
               </div>
             ))}

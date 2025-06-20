@@ -5,7 +5,7 @@ import Navbar from "../components/Navbar";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import Pagination from "../components/Pagination";
 import AddTransactionModal from "./AddProjectFiance";
-      const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl = import.meta.env.VITE_API_URL;
 
 const ProjectFinance = () => {
   const reportsPerPage = 5;
@@ -16,11 +16,17 @@ const ProjectFinance = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editTransactionId, setEditTransactionId] = useState(null);
 
-  const fetchTransactions = async () => {
+ const fetchTransactions = async () => {
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) return;
+
+    const user = JSON.parse(storedUser);
+    const userId = user.id;
+
     try {
-      const res = await axios.get(
-        `${apiUrl}/api/projectfinance/getAll`
-      );
+      const res = await axios.get(`${apiUrl}/api/projectfinance/getAll`, {
+        params: { userId },
+      });
       setReports(res.data);
     } catch (err) {
       console.error("Failed to fetch transactions:", err);

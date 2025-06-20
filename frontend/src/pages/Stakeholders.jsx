@@ -37,13 +37,21 @@ const Stakeholders = () => {
     project: "",
   });
 
-  useEffect(() => {
-    fetchStakeholders();
-    axios
-      .get(`${apiUrl}/api/projects/getName`)
-      .then((res) => setProjectOptions(res.data))
-      .catch((err) => console.error("Failed to fetch projects:", err));
-  }, []);
+ useEffect(() => {
+  fetchStakeholders();
+
+  const storedUser = localStorage.getItem("user");
+  if (!storedUser) return;
+
+  const user = JSON.parse(storedUser);
+  const userId = user.id;
+
+  axios
+    .get(`${apiUrl}/api/projects/getName?userId=${userId}`)
+    .then((res) => setProjectOptions(res.data))
+    .catch((err) => console.error("Failed to fetch projects:", err));
+}, []);
+
 
   const fetchStakeholders = () => {
     axios
@@ -83,15 +91,38 @@ const Stakeholders = () => {
   };
 
   const handleSave = () => {
-    const request = modalData._id
-      ? axios.put(`${apiUrl}/api/stakeholders/${modalData._id}`, modalData)
-      : axios.post(`${apiUrl}/api/stakeholders`, modalData);
+  // ✅ Get user from localStorage
+  const storedUser = localStorage.getItem("user");
+  if (!storedUser) {
+    alert("User not found in localStorage. Please log in again.");
+    return;
+  }
 
-    request.then(() => {
+  const userObj = JSON.parse(storedUser);
+  const userId = userObj?.id;
+  if (!userId) {
+    alert("User ID missing in localStorage.");
+    return;
+  }
+
+  // ✅ Add user ID to the payload
+  const payload = { ...modalData, user: userId };
+
+  const request = modalData._id
+    ? axios.put(`${apiUrl}/api/stakeholders/${modalData._id}`, payload)
+    : axios.post(`${apiUrl}/api/stakeholders`, payload);
+
+  request
+    .then(() => {
       fetchStakeholders();
       setModalOpen(false);
+    })
+    .catch((err) => {
+      console.error("Error saving stakeholder:", err);
+      alert("Failed to save stakeholder");
     });
-  };
+};
+
 
   const handleDelete = (id) => {
     if (window.confirm("Are you sure?")) {

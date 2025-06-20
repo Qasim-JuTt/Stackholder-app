@@ -12,7 +12,12 @@ const transactionSchema = new mongoose.Schema({
   type: {
     type: String,
     enum: ['expense']
+  },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   }
-} , { timestamps: true });
+}, { timestamps: true });
 
 export default mongoose.model('Finance', transactionSchema);

@@ -4,7 +4,7 @@ import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
-const SignUp = () => {
+const SignUp = ({ role }) => {
   const [formData, setFormData] = useState({ name: '', email: '', password: '' })
   const [errors, setErrors] = useState({})
   const [isLoading, setIsLoading] = useState(false)
@@ -32,9 +32,17 @@ const SignUp = () => {
     if (!validateForm()) return
     setIsLoading(true)
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/signup`, formData)
-      alert('Registration successful! Please login.')
-      navigate('/login-page')
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/signup`, {
+        ...formData,
+        role,
+      })
+
+      alert('Registration successful! Redirecting...')
+      const userRole = response.data.role
+      if (['admin', 'developer'].includes(userRole)) navigate('/admindashboard')
+      else if (['client', 'investor'].includes(userRole)) navigate('/userdashboard')
+      else navigate('/') // fallback
+
     } catch (error) {
       alert(error.response?.data?.message || 'Signup failed')
     } finally {
@@ -65,7 +73,7 @@ const SignUp = () => {
           </motion.button>
         </form>
         <p className="mt-4 text-sm text-center text-gray-600">
-          Already have an account? <a href="/login-page" className="text-teal-600 hover:underline">Log in</a>
+          Already have an account? <a href="/login" className="text-teal-600 hover:underline">Log in</a>
         </p>
       </motion.div>
     </section>

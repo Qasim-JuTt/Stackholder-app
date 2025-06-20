@@ -1,4 +1,3 @@
-// models/Stakeholder.js
 import mongoose from 'mongoose';
 
 const stakeholderSchema = new mongoose.Schema({
@@ -10,6 +9,11 @@ const stakeholderSchema = new mongoose.Schema({
   project: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Project',
+    required: true
+  },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     required: true
   }
 }, {

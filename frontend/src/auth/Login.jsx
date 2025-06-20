@@ -1,57 +1,69 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
-import { motion } from 'framer-motion'
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { motion } from 'framer-motion';
 
 const Login = () => {
-  const [formData, setFormData] = useState({ email: '', password: '' })
-  const [errors, setErrors] = useState({})
-  const [isLoading, setIsLoading] = useState(false)
-  const navigate = useNavigate()
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData({ ...formData, [name]: value })
-    if (errors[name]) setErrors({ ...errors, [name]: null })
-  }
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    if (errors[name]) setErrors({ ...errors, [name]: null });
+  };
 
   const validateForm = () => {
-    const newErrors = {}
+    const newErrors = {};
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required'
+      newErrors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Invalid email'
+      newErrors.email = 'Invalid email';
     }
-
     if (!formData.password) {
-      newErrors.password = 'Password is required'
+      newErrors.password = 'Password is required';
     }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!validateForm()) return
+    e.preventDefault();
+    if (!validateForm()) return;
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, formData)
-      const { token, user } = response.data
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/auth/login`,
+        formData
+      );
+      const { token, user } = response.data;
 
-      localStorage.setItem('token', token)
-      localStorage.setItem('user', JSON.stringify(user))
+      // Store in localStorage
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('role', user.role);
 
-      alert('Login successful!')
-      navigate('/dashboard') // Change to your protected route
+      alert('Login successful!');
+
+      // Redirect based on role
+      const role = user.role;
+      if (role === 'admin' || role === 'developer') {
+        navigate('/admin-dashboard');
+      } else if (role === 'client' || role === 'investor') {
+        navigate('/client-dashboard');
+      } else {
+        navigate('/');
+      }
     } catch (error) {
-      const message = error.response?.data?.message || 'Login failed'
-      alert(message)
+      const message = error.response?.data?.message || 'Login failed';
+      alert(message);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-gray-100">
@@ -102,8 +114,8 @@ const Login = () => {
         </p>
       </motion.div>
     </section>
-  )
-}
+  );
+};
 
 const InputField = ({ label, name, type = 'text', value, onChange, error, placeholder }) => (
   <div>
@@ -120,6 +132,6 @@ const InputField = ({ label, name, type = 'text', value, onChange, error, placeh
     />
     {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
   </div>
-)
+);
 
-export default Login
+export default Login;

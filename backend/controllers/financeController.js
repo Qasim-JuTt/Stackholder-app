@@ -2,7 +2,7 @@ import Finance from '../models/ProjectFinance.js';
 
 export const addTransaction = async (req, res) => {
   try {
-    const newTransaction = new Finance(req.body);
+    const newTransaction = new Finance(req.body); // user field should be included in body
     const saved = await newTransaction.save();
     res.status(201).json(saved);
   } catch (err) {
@@ -11,18 +11,27 @@ export const addTransaction = async (req, res) => {
 };
 
 
-// Get all transactions (latest first)
 export const getAllTransactions = async (req, res) => {
+  const { userId } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ message: "Missing userId in query" });
+  }
+
   try {
-    const transactions = await Finance.find()
-      .populate('project')
-      .sort({ createdAt: -1 }); // Sort by newest first
+    // Directly find all transactions for the given user
+    const transactions = await Finance.find({ user: userId })
+      .populate("project") // Optional: only if you want project info
+      .sort({ createdAt: -1 });
+
     res.status(200).json(transactions);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: "Failed to fetch transactions",
+      error: error.message,
+    });
   }
 };
-
 
 // Get a single transaction by ID
 export const getTransactionById = async (req, res) => {

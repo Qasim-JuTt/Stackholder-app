@@ -12,6 +12,8 @@ import { SearchProvider } from './context/searchContext'
 import Login from './auth/Login'
 import SignUp from './auth/Singup'
 import NotificationComponent from './components/Notification'
+import SignUpUser from './pages/SignUpUser'
+import SignUpAdmin from './pages/SignUpAdmin'
 
 function App() {
   return (
@@ -22,7 +24,10 @@ function App() {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/stakeholders" element={<Stakeholders />} />
-        <Route path="/singup" element={<SignUp />} />
+        
+        <Route path="/sign-up-user" element={<SignUpUser />} />
+        <Route path="/sign-up-admin" element={<SignUpAdmin />} />
+        {/* <Route path="/sign-up" element={<SignUp />} /> */}
         <Route path="/login" element={<Login />} />
         <Route path="/projects" element={<ProjectManagement />} />
         <Route path="/financials" element={<FinanceDashboard/>} />
