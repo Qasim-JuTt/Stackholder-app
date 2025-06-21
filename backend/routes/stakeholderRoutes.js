@@ -6,9 +6,11 @@ import {
   createStakeholder,
   updateStakeholder,
   deleteStakeholder,
+  getStakeholderStats,
 } from '../controllers/stakeholderController.js';
 
 const router = express.Router();
+router.get("/stats", getStakeholderStats);
 router.get('/', getAllStakeholders);
 router.get('/:id', getStakeholderById);
 router.post('/', createStakeholder);

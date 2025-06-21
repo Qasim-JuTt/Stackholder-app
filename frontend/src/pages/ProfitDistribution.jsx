@@ -54,20 +54,20 @@ useEffect(() => {
     );
 
     return [
+       {
+        title: "Total Income",
+        value: `$${totalBudget.toLocaleString()}`,
+        bg: "#2563eb",
+      },
+       {
+        title: "Total Expenditure",
+        value: `$${totalExpenditure.toLocaleString()}`,
+        bg: "#7c3aed",
+      },
       {
         title: "Total Profit",
         value: `$${totalProfit.toLocaleString()}`,
         bg: "#16a34a",
-      },
-      {
-        title: "Total Budget",
-        value: `$${totalBudget.toLocaleString()}`,
-        bg: "#2563eb",
-      },
-      {
-        title: "Total Expenditure",
-        value: `$${totalExpenditure.toLocaleString()}`,
-        bg: "#7c3aed",
       },
       {
         title: "Avg. Completion",

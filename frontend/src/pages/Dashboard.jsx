@@ -14,17 +14,32 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const { searchTerm, searchResults } = useSearch();
 
-  const [stakeholders] = useState({
-    total: 120,
-    active: 85,
-    inactive: 35,
-    new: 8,
+  const [stakeholders, setStakeholders] = useState({
+    total: 0,
+    active: 0,
+    inactive: 0,
+    new: 0,
   });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const storedUser = localStorage.getItem("user");
+      if (!storedUser) return;
+
+      const userId = JSON.parse(storedUser).id;
+      try {
+        const res = await axios.get(`${apiUrl}/api/stakeholders/stats?userId=${userId}`);
+        setStakeholders(res.data);
+      } catch (err) {
+        console.error("Error fetching stakeholder stats:", err);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   const stakeholderStats = [
     { title: "Total Stakeholders", value: stakeholders.total, bg: "#16a34a" },
-    { title: "Active Stakeholders", value: stakeholders.active, bg: "#2563eb" },
-    { title: "Inactive Stakeholders", value: stakeholders.inactive, bg: "#7c3aed" },
     { title: "New Stakeholders", value: stakeholders.new, bg: "#f59e0b" },
   ];
 

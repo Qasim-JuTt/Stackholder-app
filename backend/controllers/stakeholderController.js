@@ -69,5 +69,24 @@ export const deleteStakeholder = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+// controller/stakeholderController.js
+export const getStakeholderStats = async (req, res) => {
+  const { userId } = req.query;
+
+  try {
+    const total = await Stakeholder.countDocuments({ user: userId });
+    const active = await Stakeholder.countDocuments({ user: userId, isActive: true });
+    const inactive = await Stakeholder.countDocuments({ user: userId, isActive: false });
+    const newCount = await Stakeholder.countDocuments({
+      user: userId,
+      createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }, // last 7 days
+    });
+
+    res.json({ total, active, inactive, new: newCount });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch stats" });
+  }
+};
+
 
 
