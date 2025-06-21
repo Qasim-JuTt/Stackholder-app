@@ -28,34 +28,52 @@ const Dashboard = () => {
     { title: "New Stakeholders", value: stakeholders.new, bg: "#f59e0b" },
   ];
 
- useEffect(() => {
-  const fetchProjectsWithStakeholders = async () => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (!user || !user.id) {
-      console.error("User ID not found in localStorage");
-      return;
-    }
+  useEffect(() => {
+    const fetchProjectsAndExpenses = async () => {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!user || !user.id) {
+        console.error("User ID not found in localStorage");
+        return;
+      }
 
-    try {
-      const response = await axios.get(
-        `${apiUrl}/api/projects/with-stakeholders?userId=${user.id}`
-      );
+      try {
+        // Step 1: Fetch projects with stakeholders
+        const stakeholdersRes = await axios.get(
+          `${apiUrl}/api/projects/with-stakeholders?userId=${user.id}`
+        );
 
-      const filteredProjects = response.data.filter(
-        (project) => project.stakeholders && project.stakeholders.length > 0
-      );
+        // Step 2: Fetch project total expenses
+        const expensesRes = await axios.get(`${apiUrl}/api/projects/expenses`, {
+          params: { userId: user.id },
+        });
 
-      setProjectsData(filteredProjects);
-    } catch (error) {
-      console.error("Failed to fetch projects:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+        // Step 3: Map expenses by project ID
+        const expenseMap = {};
+        expensesRes.data.forEach((proj) => {
+          expenseMap[proj._id] = proj.totalExpenditure;
+        });
 
-  fetchProjectsWithStakeholders();
-}, []);
+        // Step 4: Merge expenses into project list
+        const mergedProjects = stakeholdersRes.data.map((project) => ({
+          ...project,
+          totalExpenditure: expenseMap[project._id] || 0,
+        }));
 
+        // Step 5: Filter out projects with no stakeholders
+        const filtered = mergedProjects.filter(
+          (p) => p.stakeholders && p.stakeholders.length > 0
+        );
+
+        setProjectsData(filtered);
+      } catch (error) {
+        console.error("Failed to fetch projects or expenses:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjectsAndExpenses();
+  }, []);
 
   const getStakeholderSummary = (stakeholders = []) => {
     const summary = {};
@@ -70,7 +88,7 @@ const Dashboard = () => {
   };
 
   const displayedProjects =
-    searchTerm.trim() !== '' && Array.isArray(searchResults)
+    searchTerm.trim() !== "" && Array.isArray(searchResults)
       ? searchResults
       : Array.isArray(projectsData)
       ? projectsData
@@ -84,7 +102,7 @@ const Dashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col pr-60"> {/* Reserve space for notification */}
+      <div className="flex-1 flex flex-col pr-60">
         <Navbar />
 
         <div className="p-6">
@@ -124,7 +142,7 @@ const Dashboard = () => {
                     projectName={project.name}
                     price={project.value}
                     expense={project.totalExpenditure}
-                    completion={project.completion || 100} // use actual if available
+                    completion={project.completion || 100}
                   />
 
                   <StakeholderCard
@@ -137,8 +155,8 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* 📍 Notification - fixed to right side */}
-<div className="w-72 fixed top-0 right-0 z-50 h-screen">
+      {/* Notification Panel */}
+      <div className="w-72 fixed top-0 right-0 z-50 h-screen">
         <Notifications />
       </div>
     </div>

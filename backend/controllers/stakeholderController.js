@@ -1,16 +1,21 @@
 // controllers/stakeholderController.js
 import Stakeholder from '../models/Stakeholder.js';
 import { createNotification } from '../utils/notificationUtils.js';
-
+import mongoose from "mongoose";
 
 export const getAllStakeholders = async (req, res) => {
+  const { userId } = req.query;
+
+  if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).json({ message: "Invalid or missing userId" });
+  }
+
   try {
-    const stakeholders = await Stakeholder.find()
-      .populate('project', 'name')
-      .sort({ createdAt: -1 }); // Latest first
+    const stakeholders = await Stakeholder.find({ user: userId });
     res.json(stakeholders);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    console.error("Error fetching stakeholders:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 

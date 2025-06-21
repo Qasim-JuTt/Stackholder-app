@@ -2,6 +2,7 @@ import Project from "../models/Project.js";
 import Finance from "../models/ProjectFinance.js";
 import Stakeholder from "../models/Stakeholder.js";
 import { createNotification } from "../utils/notificationUtils.js";
+import mongoose from 'mongoose';
 
 export const getProjects = async (req, res) => {
   try {
@@ -119,7 +120,7 @@ export const getProjectsWithTotalExpense = async (req, res) => {
       },
       {
         $lookup: {
-          from: "finances", // 👈 Ensure this matches your actual collection name
+          from: "finances", // collection name in DB
           localField: "_id",
           foreignField: "project",
           as: "finances",
@@ -155,7 +156,6 @@ export const getProjectsWithTotalExpense = async (req, res) => {
       },
     ]);
 
-    console.log("Projects found:", projects.length);
     res.status(200).json(projects);
   } catch (error) {
     console.error("Aggregation error:", error);
@@ -168,53 +168,57 @@ export const getProjectsWithTotalExpense = async (req, res) => {
 
 // Controller to get all projects with profit distribution and expenditure details
 export const getAllProjectsWithProfitDistribution = async (req, res) => {
+  const { userId } = req.query;
+
+  if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).json({ message: "Invalid or missing userId" });
+  }
+
   try {
-    // 1. Get all projects that have at least one stakeholder
+    // 1. Get all project IDs with stakeholders
     const stakeholderProjects = await Stakeholder.distinct("project");
-    const projects = await Project.find({ _id: { $in: stakeholderProjects } });
+
+    // 2. Filter projects that belong to this user and have stakeholders
+    const projects = await Project.find({
+      _id: { $in: stakeholderProjects },
+      user: userId,
+    });
 
     const result = [];
 
     for (const project of projects) {
-      // 2. Get all expense transactions related to this project
+      // 3. Fetch all expense transactions for this project
       const expenseTransactions = await Finance.find({
         project: project._id,
         type: "expense",
       });
 
-      // 3. Calculate total expenditure
+      // 4. Calculate total expenditure
       const totalExpenditure = expenseTransactions.reduce(
         (sum, entry) => sum + entry.amount,
         0
       );
 
-      // 4. Calculate profit = value - totalExpenditure
+      // 5. Calculate profit
       const profit = project.value - totalExpenditure;
 
-      // 5. Get stakeholders for this project
+      // 6. Get project stakeholders
       const stakeholders = await Stakeholder.find({ project: project._id });
 
-      // 6. Calculate total share
+      // 7. Calculate total share
       const totalShare = stakeholders.reduce((sum, s) => sum + s.share, 0);
 
-      let stakeholderProfits = [];
+      // 8. Calculate each stakeholder's profit (if share is 100%)
+      const stakeholderProfits = stakeholders.map((stakeholder) => ({
+        name: stakeholder.name,
+        share: stakeholder.share,
+        profit:
+          totalShare === 100
+            ? ((stakeholder.share / 100) * profit).toFixed(2)
+            : "0.00",
+      }));
 
-      // 7. If totalShare is 100%, calculate profit distribution
-      if (totalShare === 100) {
-        stakeholderProfits = stakeholders.map((stakeholder) => ({
-          name: stakeholder.name,
-          share: stakeholder.share,
-          profit: ((stakeholder.share / 100) * profit).toFixed(2),
-        }));
-      } else {
-        stakeholderProfits = stakeholders.map((stakeholder) => ({
-          name: stakeholder.name,
-          share: stakeholder.share,
-          profit: "0.00",
-        }));
-      }
-
-      // 8. Build final result object
+      // 9. Push project report to result
       result.push({
         project: {
           id: project._id,

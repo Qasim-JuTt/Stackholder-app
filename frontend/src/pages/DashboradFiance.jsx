@@ -20,18 +20,28 @@ ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 const FinanceDashboard = () => {
   const [projects, setProjects] = useState([]);
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const res = await axios.get(`${apiUrl}/api/projects/expenses`);
-        setProjects(res.data);
-      } catch (err) {
-        console.error("Failed to fetch project data", err);
+ useEffect(() => {
+  const fetchProjects = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user")); // make sure this exists
+      if (!user || !user.id) {
+        console.error("User ID missing from localStorage");
+        return;
       }
-    };
 
-    fetchProjects();
-  }, []);
+      const res = await axios.get(`${apiUrl}/api/projects/expenses`, {
+        params: { userId: user.id },
+      });
+
+      setProjects(res.data);
+    } catch (err) {
+      console.error("Failed to fetch project data", err);
+    }
+  };
+
+  fetchProjects();
+}, []);
+
 
   const totalBudget = projects.reduce((sum, p) => sum + p.value, 0);
   const totalExpenditure = projects.reduce((sum, p) => sum + p.totalExpenditure, 0);

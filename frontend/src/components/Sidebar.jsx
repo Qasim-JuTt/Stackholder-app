@@ -16,14 +16,18 @@ const Sidebar = () => {
   const location = useLocation();
 
   const menuItems = [
-    { name: 'Dashboard', icon: <FaTachometerAlt />, path: '/' },
+    { name: 'Dashboard', icon: <FaTachometerAlt />, path: '/dashboard' },
     { name: 'Projects', icon: <FaProjectDiagram />, path: '/projects' },
     { name: 'Stakeholders', icon: <FaUsers />, path: '/stakeholders' },
     { name: 'Project Financials', icon: <FaFileExport />, path: '/project-finance' },
     { name: 'Financial Dashboard', icon: <FaWallet />, path: '/financials' },
     { name: 'Profit Distribution', icon: <FaChartPie />, path: '/profit-distribution' },
-    // { name: 'Logout', icon: <FaSignOutAlt />, path: '/logout' },
   ];
+
+  const handleLogout = () => {
+    localStorage.clear(); // Clear user data
+    window.location.href = '/'; // Redirect to login page
+  };
 
   return (
     <>
@@ -67,6 +71,15 @@ const Sidebar = () => {
               </Link>
             );
           })}
+
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-4 py-2 rounded-md transition hover:bg-[#8b1e1e] text-gray-300 hover:text-white mt-4"
+          >
+            <span className="text-lg"><FaSignOutAlt /></span>
+            <span className="text-sm">Logout</span>
+          </button>
         </nav>
       </div>
     </>

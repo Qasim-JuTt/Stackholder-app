@@ -28,6 +28,7 @@ const Stakeholders = () => {
   const [stakeholders, setStakeholders] = useState([]);
   const [projectOptions, setProjectOptions] = useState([]);
   const [availableShare, setAvailableShare] = useState(100);
+  const [emailError, setEmailError] = useState("");
   const [modalData, setModalData] = useState({
     name: "",
     email: "",
@@ -37,25 +38,27 @@ const Stakeholders = () => {
     project: "",
   });
 
- useEffect(() => {
-  fetchStakeholders();
+  useEffect(() => {
+    fetchStakeholders();
 
-  const storedUser = localStorage.getItem("user");
-  if (!storedUser) return;
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) return;
 
-  const user = JSON.parse(storedUser);
-  const userId = user.id;
+    const user = JSON.parse(storedUser);
+    const userId = user.id;
 
-  axios
-    .get(`${apiUrl}/api/projects/getName?userId=${userId}`)
-    .then((res) => setProjectOptions(res.data))
-    .catch((err) => console.error("Failed to fetch projects:", err));
-}, []);
-
+    axios
+      .get(`${apiUrl}/api/projects/getName?userId=${userId}`)
+      .then((res) => setProjectOptions(res.data))
+      .catch((err) => console.error("Failed to fetch projects:", err));
+  }, []);
 
   const fetchStakeholders = () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const userId = user?.id;
+
     axios
-      .get(`${apiUrl}/api/stakeholders`)
+      .get(`${apiUrl}/api/stakeholders?userId=${userId}`)
       .then((res) => setStakeholders(res.data))
       .catch((err) => console.error("Error fetching stakeholders:", err));
   };
@@ -74,6 +77,7 @@ const Stakeholders = () => {
   const handleEdit = (stakeholder) => {
     setModalData({ ...stakeholder, project: stakeholder.project._id });
     fetchAvailableShare(stakeholder.project._id);
+    setEmailError("");
     setModalOpen(true);
   };
 
@@ -86,43 +90,50 @@ const Stakeholders = () => {
       responsibilities: "",
       project: "",
     });
+    setEmailError("");
     setAvailableShare(100);
     setModalOpen(true);
   };
 
   const handleSave = () => {
-  // ✅ Get user from localStorage
-  const storedUser = localStorage.getItem("user");
-  if (!storedUser) {
-    alert("User not found in localStorage. Please log in again.");
-    return;
-  }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  const userObj = JSON.parse(storedUser);
-  const userId = userObj?.id;
-  if (!userId) {
-    alert("User ID missing in localStorage.");
-    return;
-  }
+    if (!modalData.email || !emailRegex.test(modalData.email)) {
+      setEmailError("Please enter a valid email address.");
+      return;
+    }
 
-  // ✅ Add user ID to the payload
-  const payload = { ...modalData, user: userId };
+    setEmailError("");
 
-  const request = modalData._id
-    ? axios.put(`${apiUrl}/api/stakeholders/${modalData._id}`, payload)
-    : axios.post(`${apiUrl}/api/stakeholders`, payload);
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      alert("User not found in localStorage. Please log in again.");
+      return;
+    }
 
-  request
-    .then(() => {
-      fetchStakeholders();
-      setModalOpen(false);
-    })
-    .catch((err) => {
-      console.error("Error saving stakeholder:", err);
-      alert("Failed to save stakeholder");
-    });
-};
+    const userObj = JSON.parse(storedUser);
+    const userId = userObj?.id;
+    if (!userId) {
+      alert("User ID missing in localStorage.");
+      return;
+    }
 
+    const payload = { ...modalData, user: userId };
+
+    const request = modalData._id
+      ? axios.put(`${apiUrl}/api/stakeholders/${modalData._id}`, payload)
+      : axios.post(`${apiUrl}/api/stakeholders`, payload);
+
+    request
+      .then(() => {
+        fetchStakeholders();
+        setModalOpen(false);
+      })
+      .catch((err) => {
+        console.error("Error saving stakeholder:", err);
+        alert("Failed to save stakeholder");
+      });
+  };
 
   const handleDelete = (id) => {
     if (window.confirm("Are you sure?")) {
@@ -133,7 +144,6 @@ const Stakeholders = () => {
   };
 
   const fetchAvailableShare = async (projectId) => {
-    // alert(projectId)
     if (!projectId) return setAvailableShare(100);
 
     try {
@@ -264,13 +274,19 @@ const Stakeholders = () => {
                 onChange={(e) => setModalData({ ...modalData, name: e.target.value })}
               />
 
-              <InputField
-                label="Email"
-                type="email"
-                placeholder="Email"
-                value={modalData.email}
-                onChange={(e) => setModalData({ ...modalData, email: e.target.value })}
-              />
+              <div>
+                <InputField
+                  label="Email"
+                  type="email"
+                  placeholder="Email"
+                  value={modalData.email}
+                  onChange={(e) => {
+                    setModalData({ ...modalData, email: e.target.value });
+                    setEmailError("");
+                  }}
+                />
+                {emailError && <p className="text-sm text-red-600 mt-1">{emailError}</p>}
+              </div>
 
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Role</label>

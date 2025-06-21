@@ -12,6 +12,7 @@ import {
   Legend,
 } from "chart.js";
 import axios from "axios";
+
 const apiUrl = import.meta.env.VITE_API_URL;
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
@@ -20,31 +21,37 @@ const ProfitDistribution = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
 
+useEffect(() => {
+  const fetchProfitData = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const userId = user?.id;
 
-  useEffect(() => {
-    const fetchProfitData = async () => {
-      try {
-        const res = await axios.get(
-          `${apiUrl}/api/projects/profit-distribution`
-        ); // update URL accordingly
-        setProjects(res.data);
-        setLoading(false);
-      } catch (error) {
-        console.error("Failed to fetch profit data", error);
-      }
-    };
+      const res = await axios.get(
+        `${apiUrl}/api/projects/profit-distribution?userId=${userId}`
+      );
+      setProjects(res.data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Failed to fetch profit data", error);
+    }
+  };
 
-    fetchProfitData();
-  }, []);
+  fetchProfitData();
+}, []);
+
 
   const calcStats = () => {
     const totalBudget = projects.reduce((sum, p) => sum + p.project.value, 0);
-    const totalExpense = projects.reduce(
-      (sum, p) => sum + p.project.totalExpense,
+    const totalExpenditure = projects.reduce(
+      (sum, p) => sum + p.project.totalExpenditure,
       0
     );
-    const totalProfit = totalBudget - totalExpense;
-    const avgCompletion = Math.round((projects.length * 100) / projects.length); // placeholder if no completion %
+    const totalProfit = totalBudget - totalExpenditure;
+    const avgCompletion = Math.round(
+      projects.reduce((sum, p) => sum + (p.project.completion || 100), 0) /
+        projects.length
+    );
 
     return [
       {
@@ -59,10 +66,14 @@ const ProfitDistribution = () => {
       },
       {
         title: "Total Expenditure",
-        value: `$${totalExpense.toLocaleString()}`,
+        value: `$${totalExpenditure.toLocaleString()}`,
         bg: "#7c3aed",
       },
-      { title: "Avg. Completion", value: `${avgCompletion}%`, bg: "#f59e0b" },
+      {
+        title: "Avg. Completion",
+        value: `${avgCompletion}%`,
+        bg: "#f59e0b",
+      },
     ];
   };
 
@@ -152,7 +163,7 @@ const ProfitDistribution = () => {
                     projectName={project.name}
                     price={project.value}
                     expense={project.totalExpenditure}
-                    completion={project.completion || 100} // use actual if available
+                    completion={project.completion || 100}
                   />
 
                   <div className="w-full h-48 px-2">

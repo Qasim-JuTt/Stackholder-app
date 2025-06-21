@@ -41,19 +41,14 @@ const Login = () => {
       );
       const { token, user } = response.data;
 
-      // Store in localStorage
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('role', user.role);
 
       alert('Login successful!');
-
-      // Redirect based on role
       const role = user.role;
-      if (role === 'admin' || role === 'developer') {
-        navigate('/admin-dashboard');
-      } else if (role === 'client' || role === 'investor') {
-        navigate('/client-dashboard');
+      if (['admin', 'developer', 'client', 'investor'].includes(role)) {
+        navigate('/dashboard');
       } else {
         navigate('/');
       }
@@ -66,18 +61,19 @@ const Login = () => {
   };
 
   return (
-    <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-gray-100">
+    <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100 relative overflow-hidden">
+      <div className="absolute inset-0 blur-[120px] opacity-20 bg-gradient-to-tr from-purple-300 to-blue-400 z-0"></div>
       <motion.div
-        initial={{ y: 50, opacity: 0 }}
+        initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-md p-8 bg-white rounded-2xl shadow-2xl"
+        className="relative z-10 w-full max-w-md p-8 bg-white/80 backdrop-blur-lg border border-gray-200 rounded-3xl shadow-[0_15px_60px_-15px_rgba(0,0,0,0.3)]"
       >
-        <h2 className="text-3xl font-bold text-center text-[#101C46] mb-6">
+        <h2 className="text-3xl font-extrabold text-center text-[#101C46] mb-6 tracking-tight">
           Login to Your Account
         </h2>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <InputField
             label="Email"
             name="email"
@@ -97,18 +93,19 @@ const Login = () => {
             placeholder="••••••••"
           />
           <motion.button
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.01 }}
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-300 disabled:opacity-70"
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-2.5 rounded-xl shadow-md hover:from-blue-700 hover:to-purple-700 transition-all duration-300 ease-in-out disabled:opacity-70"
           >
             {isLoading ? 'Logging in...' : 'Log In'}
           </motion.button>
         </form>
 
-        <p className="mt-4 text-sm text-center text-gray-600">
-          Don't have an account?{' '}
-          <a href="/sign-up" className="text-teal-600 hover:underline">
+        <p className="mt-5 text-sm text-center text-gray-700">
+          Don&apos;t have an account?{' '}
+          <a href="/sign-up-user" className="text-blue-600 font-medium hover:underline">
             Sign up
           </a>
         </p>
@@ -118,15 +115,15 @@ const Login = () => {
 };
 
 const InputField = ({ label, name, type = 'text', value, onChange, error, placeholder }) => (
-  <div>
-    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+  <div className="relative">
+    <label className="block text-sm font-medium text-gray-800 mb-1">{label}</label>
     <input
       type={type}
       name={name}
       value={value}
       placeholder={placeholder}
       onChange={onChange}
-      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${
+      className={`w-full px-4 py-2.5 bg-white border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
         error ? 'border-red-500' : 'border-gray-300'
       }`}
     />

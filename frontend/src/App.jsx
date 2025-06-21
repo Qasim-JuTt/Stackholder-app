@@ -22,13 +22,13 @@ function App() {
       {/* You can uncomment Sidebar and if you want it on all pages */}
       {/* <Sidebar /> */}
       <Routes>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/stakeholders" element={<Stakeholders />} />
         
         <Route path="/sign-up-user" element={<SignUpUser />} />
         <Route path="/sign-up-admin" element={<SignUpAdmin />} />
         {/* <Route path="/sign-up" element={<SignUp />} /> */}
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Login />} />
         <Route path="/projects" element={<ProjectManagement />} />
         <Route path="/financials" element={<FinanceDashboard/>} />
         <Route path="/profit-distribution" element={<FinanceTracker />} />
