@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { logLogin } from '../../api/trackerApi.js'; // 
+import { motion } from 'framer-motion';
+
+import { logLogin } from '../../api/trackerApi.js'; 
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });

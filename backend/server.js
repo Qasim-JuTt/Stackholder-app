@@ -6,6 +6,8 @@ import stakeholderRoutes from './routes/stakeholderRoutes.js';
 import authRoutes from './routes/authRoutes.js'
 import notificationRoutes from './routes/notificationRoutes.js';
 import activityRoutes from './routes/activityRoutes.js';
+import adminUserRoutes from './routes/adminUserRoutes.js';
+
 
 
 import cors from "cors"
@@ -23,6 +25,7 @@ app.use('/api/stakeholders', stakeholderRoutes);
 app.use('/api/auth', authRoutes)
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/activity', activityRoutes);
+app.use('/api/users', adminUserRoutes);
 
 
 

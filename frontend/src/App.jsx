@@ -15,6 +15,8 @@ import NotificationComponent from './components/Notification'
 import SignUpUser from './pages/SignUpUser'
 import SignUpAdmin from './pages/SignUpAdmin'
 import ActivityTracker from './components/ActivityTracker'
+import RegisterPage from './pages/RegisterPage'
+import AdminDashboard from './pages/AdminDashboard'
 
 function App() {
   return (
@@ -22,7 +24,8 @@ function App() {
     <Router>
     <ActivityTracker />      {/* <Sidebar /> */}
       <Routes>
-      
+       <Route path="/register" element={<RegisterPage />} />
+       <Route path="/admindashboard" element={<AdminDashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/stakeholders" element={<Stakeholders />} />
         
@@ -30,6 +33,8 @@ function App() {
         <Route path="/sign-up-admin" element={<SignUpAdmin />} />
         {/* <Route path="/sign-up" element={<SignUp />} /> */}
         <Route path="/" element={<Login />} />
+        {/* <Route path="/adduser" element={<AddUserForm />} /> */}
+
         <Route path="/projects" element={<ProjectManagement />} />
         <Route path="/financials" element={<FinanceDashboard/>} />
         <Route path="/profit-distribution" element={<FinanceTracker />} />
