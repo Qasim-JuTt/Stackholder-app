@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { motion } from 'framer-motion';
+import { logLogin } from '../../api/trackerApi.js'; // 
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -39,19 +39,34 @@ const Login = () => {
         `${import.meta.env.VITE_API_URL}/api/auth/login`,
         formData
       );
+
       const { token, user } = response.data;
 
+      // Store token and user info
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('role', user.role);
 
+      // ✅ Generate or get existing sessionId
+      let sessionId = localStorage.getItem('sessionId');
+      if (!sessionId) {
+        sessionId = crypto.randomUUID();
+        localStorage.setItem('sessionId', sessionId);
+      }
+
+      // ✅ Track login activity
+      await logLogin(user.id, sessionId);
+
       alert('Login successful!');
+
+      // Redirect by role
       const role = user.role;
       if (['admin', 'developer', 'client', 'investor'].includes(role)) {
         navigate('/dashboard');
       } else {
         navigate('/');
       }
+
     } catch (error) {
       const message = error.response?.data?.message || 'Login failed';
       alert(message);

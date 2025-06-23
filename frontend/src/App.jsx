@@ -14,14 +14,15 @@ import SignUp from './auth/Singup'
 import NotificationComponent from './components/Notification'
 import SignUpUser from './pages/SignUpUser'
 import SignUpAdmin from './pages/SignUpAdmin'
+import ActivityTracker from './components/ActivityTracker'
 
 function App() {
   return (
     <SearchProvider>
     <Router>
-      {/* You can uncomment Sidebar and if you want it on all pages */}
-      {/* <Sidebar /> */}
+    <ActivityTracker />      {/* <Sidebar /> */}
       <Routes>
+      
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/stakeholders" element={<Stakeholders />} />
         
