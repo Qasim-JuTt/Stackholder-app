@@ -1,207 +1,165 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import Sidebar from "../components/Sidebar";
-import Navbar from "../components/Navbar";
-import { Pencil, Trash2, Plus } from "lucide-react";
-import Pagination from "../components/Pagination";
-import AddTransactionModal from "./AddProjectFiance";
-const apiUrl = import.meta.env.VITE_API_URL;
+import React, { useState, useEffect } from 'react';
+import InputField from '../components/InputField';
+import Button from '../components/Button';
+import { Pencil, Trash2 } from 'lucide-react';
 
-const ProjectFinance = () => {
-  const reportsPerPage = 5;
+const Slots = () => {
+  const [slots, setSlots] = useState([]);
+  const [day, setDay] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [error, setError] = useState('');
+  const [showModal, setShowModal] = useState(false);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [reports, setReports] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editTransactionId, setEditTransactionId] = useState(null);
-
- const fetchTransactions = async () => {
-    const storedUser = localStorage.getItem("user");
-    if (!storedUser) return;
-
-    const user = JSON.parse(storedUser);
-    const userId = user.id;
-
-    try {
-      const res = await axios.get(`${apiUrl}/api/projectfinance/getAll`, {
-        params: { userId },
-      });
-      setReports(res.data);
-    } catch (err) {
-      console.error("Failed to fetch transactions:", err);
-    }
-  };
-
+  // Load static slots on first render
   useEffect(() => {
-    fetchTransactions();
+    const staticSlots = [
+      { day: 'Monday', startTime: '09:00', endTime: '10:00' },
+      { day: 'Tuesday', startTime: '11:00', endTime: '12:30' },
+      { day: 'Wednesday', startTime: '14:00', endTime: '15:00' },
+    ];
+    setSlots(staticSlots);
   }, []);
 
-  const handleDeleteClick = async (transactionId) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this transaction?"
-    );
-    if (!confirmDelete) return;
-
-    try {
-      await axios.delete(
-        `${apiUrl}/api/projectfinance/delete/${transactionId}`
-      );
-      fetchTransactions();
-    } catch (err) {
-      console.error("Failed to delete transaction:", err);
-      alert("Failed to delete transaction. Please try again.");
+  const handleAddSlot = () => {
+    if (!day || !startTime || !endTime) {
+      setError('Please fill in all fields');
+      return;
     }
+
+    const conflict = slots.some(slot =>
+      slot.day === day &&
+      ((startTime >= slot.startTime && startTime < slot.endTime) ||
+        (endTime > slot.startTime && endTime <= slot.endTime) ||
+        (startTime <= slot.startTime && endTime >= slot.endTime))
+    );
+
+    if (conflict) {
+      setError('Slot conflicts with an existing one');
+      return;
+    }
+
+    const newSlot = { day, startTime, endTime };
+    setSlots([...slots, newSlot]);
+    setDay('');
+    setStartTime('');
+    setEndTime('');
+    setError('');
+    setShowModal(false);
   };
 
-  const filteredReports = reports.filter(
-    (r) =>
-      r.project?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const indexOfLast = currentPage * reportsPerPage;
-  const indexOfFirst = indexOfLast - reportsPerPage;
-  const currentReports = filteredReports.slice(indexOfFirst, indexOfLast);
-  const totalPages = Math.ceil(filteredReports.length / reportsPerPage);
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) setCurrentPage(page);
-  };
-
-  const handleAddClick = () => {
-    setEditTransactionId(null);
-    setIsModalOpen(true);
-  };
-
-  const handleEditClick = (transactionId) => {
-    setEditTransactionId(transactionId);
-    setIsModalOpen(true);
+  const handleDeleteSlot = (index) => {
+    const updatedSlots = [...slots];
+    updatedSlots.splice(index, 1);
+    setSlots(updatedSlots);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <div className="w-25 fixed md:relative z-40">
-        <Sidebar />
-      </div>
-      <div className="flex-1 md:ml-40">
-        <Navbar />
-        <main className="p-6 space-y-6">
-          <div className="flex flex-col md:flex-row justify-between gap-4">
-            <h1 className="text-2xl font-bold text-indigo-600">
-              Project Finance
-            </h1>
-            <button
-              onClick={handleAddClick}
-              className="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Add Transaction</span>
-            </button>
-          </div>
+    <Layout>
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-semibold">Manage Time Slots</h2>
+          <Button onClick={() => setShowModal(true)}>Add Slot</Button>
+        </div>
 
-          <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm">
-            {filteredReports.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                No transactions found.{" "}
-                {searchTerm
-                  ? "Try a different search."
-                  : "Add a transaction to get started."}
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead className="text-left">
-                    <tr className="text-gray-500 border-b">
-                      <th className="py-3 pr-4 whitespace-nowrap">Amount</th>
-                      <th className="py-3 pr-4 whitespace-nowrap">Date</th>
-                      <th className="py-3 pr-4 whitespace-nowrap">Category</th>
-                      <th className="py-3 pr-4 whitespace-nowrap">Project</th>
-                      <th className="py-3 pr-4 whitespace-nowrap">
-                        Description
-                      </th>
-                      <th className="py-3 pr-4 whitespace-nowrap">Type</th>
-                      <th className="py-3 pr-4 text-right whitespace-nowrap">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {currentReports.map((t) => (
-                      <tr key={t._id} className="hover:bg-gray-50 transition">
-                        <td
-                          className={`py-4 pr-4 whitespace-nowrap ${
-                            t.type === "income"
-                              ? "text-green-600"
-                              : "text-red-600"
-                          } font-semibold`}
+        <div className="bg-white p-4 rounded-xl shadow-md mt-6">
+          <h3 className="text-xl font-medium mb-3">Defined Slots</h3>
+          {slots.length === 0 ? (
+            <p>No slots added yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead className="text-left">
+                  <tr className="text-gray-500 border-b">
+                    <th className="py-3 pr-4 whitespace-nowrap">Day</th>
+                    <th className="py-3 pr-4 whitespace-nowrap">Start Time</th>
+                    <th className="py-3 pr-4 whitespace-nowrap">End Time</th>
+                    <th className="py-3 pr-4 text-right whitespace-nowrap">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {slots.map((slot, index) => (
+                    <tr key={index} className="hover:bg-gray-50 transition">
+                      <td className="py-4 pr-4 whitespace-nowrap font-medium text-gray-700">
+                        {slot.day}
+                      </td>
+                      <td className="py-4 pr-4 whitespace-nowrap text-gray-600">
+                        {slot.startTime}
+                      </td>
+                      <td className="py-4 pr-4 whitespace-nowrap text-gray-600">
+                        {slot.endTime}
+                      </td>
+                      <td className="py-4 pr-4 text-right space-x-2">
+                        <button
+                          className="text-blue-600 hover:text-blue-800 transition"
+                          onClick={() => console.log('Edit slot', index)}
                         >
-                          ${t.amount.toLocaleString()}
-                        </td>
-                        <td className="py-4 pr-4 whitespace-nowrap text-gray-500">
-                          {new Date(t.date).toLocaleDateString()}
-                        </td>
-                        <td className="py-4 pr-4 whitespace-nowrap">
-                          {t.category}
-                        </td>
-                        <td className="py-4 pr-4 whitespace-nowrap">
-                          {t.project?.name || "-"}
-                        </td>
-                        <td className="py-4 pr-4 whitespace-nowrap text-gray-600">
-                          {t.description || "-"}
-                        </td>
-                        <td className="py-4 pr-4 whitespace-nowrap">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                              t.type === "income"
-                                ? "bg-green-100 text-green-600"
-                                : "bg-red-100 text-red-600"
-                            }`}
-                          >
-                            {t.type}
-                          </span>
-                        </td>
-                        <td className="py-4 pr-4 text-right space-x-2">
-                          <button
-                            className="text-blue-600 hover:text-blue-800 transition"
-                            onClick={() => handleEditClick(t._id)}
-                          >
-                            <Pencil className="w-4 h-4 md:w-5 md:h-5" />
-                          </button>
-                          <button
-                            className="text-red-600 hover:text-red-800 transition"
-                            onClick={() => handleDeleteClick(t._id)}
-                          >
-                            <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          {filteredReports.length > 0 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
+                          <Pencil className="w-4 h-4 md:w-5 md:h-5" />
+                        </button>
+                        <button
+                          className="text-red-600 hover:text-red-800 transition"
+                          onClick={() => handleDeleteSlot(index)}
+                        >
+                          <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
-
-          <AddTransactionModal
-            open={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            editId={editTransactionId}
-            refreshData={fetchTransactions}
-          />
-        </main>
+        </div>
       </div>
-    </div>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black/90 bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-lg relative">
+            <h3 className="text-xl font-bold mb-4">Add Time Slot</h3>
+
+            {error && <p className="text-red-500 mb-2">{error}</p>}
+
+            <div className="space-y-4">
+              <select
+                value={day}
+                onChange={(e) => setDay(e.target.value)}
+                className="w-full border p-2 rounded-xl"
+              >
+                <option value="">Select Day</option>
+                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(d => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+
+              <InputField
+                type="time"
+                placeholder="Start Time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+              />
+
+              <InputField
+                type="time"
+                placeholder="End Time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+              />
+
+              <div className="flex justify-end space-x-3 pt-4">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 rounded-xl border border-gray-300 hover:bg-gray-100"
+                >
+                  Cancel
+                </button>
+                <Button onClick={handleAddSlot}>Save Slot</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </Layout>
   );
 };
 
-export default ProjectFinance;
+export default Slots;
