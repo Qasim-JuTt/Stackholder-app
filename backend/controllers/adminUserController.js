@@ -1,6 +1,7 @@
 import AdminUser from '../models/AdminUser.js'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'  
+import { createNotification } from "../utils/notificationUtils.js";
 import { logChange } from '../utils/logChange.js';
 export const fetchUnapprovedUsers = async (req, res) => {
   try {
@@ -81,13 +82,20 @@ export const registerUser = async (req, res) => {
       isApproved: role === 'admin' ? true : false
     });
 
-    await newUser.save();
+    const savedUser = await newUser.save();
+
+    await createNotification(
+      `🆕 User "${savedUser.name}" registered successfully.`,
+      savedUser.name
+    );
+
     res.status(201).json({ message: 'User registered. Awaiting approval.' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Registration failed' });
   }
 };
+
 // ✅ DELETE User with logging
 export const deleteUser = async (req, res) => {
   try {
