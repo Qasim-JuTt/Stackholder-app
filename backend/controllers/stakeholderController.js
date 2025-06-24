@@ -1,6 +1,8 @@
 // controllers/stakeholderController.js
 import Stakeholder from '../models/Stakeholder.js';
 import { createNotification } from '../utils/notificationUtils.js';
+import { logChange } from '../utils/logChange.js';
+
 import mongoose from "mongoose";
 
 export const getAllStakeholders = async (req, res) => {
@@ -45,31 +47,58 @@ export const createStakeholder = async (req, res) => {
 };
 
 
-
+// ✅ Update Stakeholder with logging
 export const updateStakeholder = async (req, res) => {
   try {
-    const updated = await Stakeholder.findByIdAndUpdate(req.params.id, req.body, {
+    const { id } = req.params;
+
+    const oldStakeholder = await Stakeholder.findById(id);
+    if (!oldStakeholder) return res.status(404).json({ message: "Not found" });
+
+    const updated = await Stakeholder.findByIdAndUpdate(id, req.body, {
       new: true,
       runValidators: true
     }).populate('project', 'name');
 
-    if (!updated) return res.status(404).json({ message: "Not found" });
+    await logChange({
+      modelName: 'Stakeholder',
+      documentId: id,
+      operation: 'update',
+      updatedBy: req.userId || 'unknown',
+      before: oldStakeholder.toObject(),
+      after: updated.toObject(),
+    });
+
     res.json(updated);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 };
 
+// ✅ Delete Stakeholder with logging
 export const deleteStakeholder = async (req, res) => {
   try {
-    const deleted = await Stakeholder.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ message: "Not found" });
+    const { id } = req.params;
+
+    const stakeholder = await Stakeholder.findById(id);
+    if (!stakeholder) return res.status(404).json({ message: "Not found" });
+
+    await logChange({
+      modelName: 'Stakeholder',
+      documentId: id,
+      operation: 'delete',
+      updatedBy: req.userId || 'unknown',
+      deletedData: stakeholder.toObject(),
+    });
+
+    await stakeholder.deleteOne();
     res.json({ message: "Deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
-// controller/stakeholderController.js
+
+// 📊 Stakeholder stats (unchanged)
 export const getStakeholderStats = async (req, res) => {
   const { userId } = req.query;
 
@@ -79,7 +108,7 @@ export const getStakeholderStats = async (req, res) => {
     const inactive = await Stakeholder.countDocuments({ user: userId, isActive: false });
     const newCount = await Stakeholder.countDocuments({
       user: userId,
-      createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }, // last 7 days
+      createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
     });
 
     res.json({ total, active, inactive, new: newCount });
@@ -87,6 +116,3 @@ export const getStakeholderStats = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch stats" });
   }
 };
-
-
-

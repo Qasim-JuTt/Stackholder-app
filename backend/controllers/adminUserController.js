@@ -1,6 +1,7 @@
 import AdminUser from '../models/AdminUser.js'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'  
+import { logChange } from '../utils/logChange.js';
 export const fetchUnapprovedUsers = async (req, res) => {
   try {
     const users = await AdminUser.find({ isApproved: false });
@@ -87,28 +88,51 @@ export const registerUser = async (req, res) => {
     res.status(500).json({ error: 'Registration failed' });
   }
 };
-
-// Delete user
+// ✅ DELETE User with logging
 export const deleteUser = async (req, res) => {
   try {
-    const user = await AdminUser.findByIdAndDelete(req.params.id);
+    const user = await AdminUser.findById(req.params.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
-    res.status(200).json({ message: 'User deleted successfully' });
+
+    await logChange({
+      modelName: 'AdminUser',
+      documentId: user._id,
+      operation: 'delete',
+      updatedBy: req.userId || 'unknown', // userId from auth middleware
+      deletedData: user.toObject(),
+    });
+
+    await user.deleteOne(); // or AdminUser.findByIdAndDelete(req.params.id)
+    res.status(200).json({ message: 'User deleted successfully and logged' });
   } catch (err) {
     res.status(500).json({ error: 'Error deleting user' });
   }
 };
 
-// Update user
+// ✅ UPDATE User with logging
 export const updateUser = async (req, res) => {
   try {
     const { name, email, role, isApproved } = req.body;
+    const userId = req.params.id;
+
+    const oldUser = await AdminUser.findById(userId);
+    if (!oldUser) return res.status(404).json({ error: 'User not found' });
+
     const updatedUser = await AdminUser.findByIdAndUpdate(
-      req.params.id,
+      userId,
       { name, email, role, isApproved },
       { new: true }
     );
-    if (!updatedUser) return res.status(404).json({ error: 'User not found' });
+
+    await logChange({
+      modelName: 'AdminUser',
+      documentId: userId,
+      operation: 'update',
+      updatedBy: req.userId || 'unknown',
+      before: oldUser.toObject(),
+      after: updatedUser.toObject(),
+    });
+
     res.status(200).json(updatedUser);
   } catch (err) {
     res.status(500).json({ error: 'Error updating user' });

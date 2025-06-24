@@ -2,6 +2,7 @@ import Project from "../models/Project.js";
 import Finance from "../models/ProjectFinance.js";
 import Stakeholder from "../models/Stakeholder.js";
 import { createNotification } from "../utils/notificationUtils.js";
+import { logChange } from '../utils/logChange.js';
 import mongoose from 'mongoose';
 
 export const getProjects = async (req, res) => {
@@ -51,25 +52,54 @@ export const createProject = async (req, res) => {
   }
 };
 
+// controllers/projectController.js
+
+// ✅ Update Project with logging
 export const updateProject = async (req, res) => {
   try {
-    const updated = await Project.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
+    const { id } = req.params;
+    const oldProject = await Project.findById(id);
+    if (!oldProject) return res.status(404).json({ error: "Project not found" });
+
+    const updated = await Project.findByIdAndUpdate(id, req.body, { new: true });
+    
+    await logChange({
+      modelName: 'Project',
+      documentId: id,
+      operation: 'update',
+      updatedBy: req.userId || 'unknown',
+      before: oldProject.toObject(),
+      after: updated.toObject(),
     });
+
     res.json(updated);
   } catch (err) {
     res.status(400).json({ error: "Failed to update project" });
   }
 };
 
+// ✅ Delete Project with logging
 export const deleteProject = async (req, res) => {
   try {
-    await Project.findByIdAndDelete(req.params.id);
+    const { id } = req.params;
+    const project = await Project.findById(id);
+    if (!project) return res.status(404).json({ error: "Project not found" });
+
+    await logChange({
+      modelName: 'Project',
+      documentId: id,
+      operation: 'delete',
+      updatedBy: req.userId || 'unknown',
+      deletedData: project.toObject(),
+    });
+
+    await project.deleteOne();
     res.json({ message: "Project deleted" });
   } catch (err) {
     res.status(500).json({ error: "Failed to delete project" });
   }
 };
+
 
 export const getProjectName = async (req, res) => {
   const { userId } = req.query;

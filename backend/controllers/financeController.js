@@ -1,4 +1,5 @@
 import Finance from '../models/ProjectFinance.js';
+import { logChange } from '../utils/logChange.js';
 
 export const addTransaction = async (req, res) => {
   try {
@@ -44,26 +45,53 @@ export const getTransactionById = async (req, res) => {
   }
 };
 
-// Update a transaction
+
+// ✅ Update Transaction with logging
 export const updateTransaction = async (req, res) => {
   try {
+    const { id } = req.params;
+
+    const oldTransaction = await Finance.findById(id);
+    if (!oldTransaction) return res.status(404).json({ message: 'Transaction not found' });
+
     const updatedTransaction = await Finance.findByIdAndUpdate(
-      req.params.id,
+      id,
       req.body,
       { new: true, runValidators: true }
     );
-    if (!updatedTransaction) return res.status(404).json({ message: 'Transaction not found' });
+
+    await logChange({
+      modelName: 'Finance',
+      documentId: id,
+      operation: 'update',
+      updatedBy: req.userId || 'unknown', // from middleware
+      before: oldTransaction.toObject(),
+      after: updatedTransaction.toObject(),
+    });
+
     res.status(200).json(updatedTransaction);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
 
-// Delete a transaction
+// ✅ Delete Transaction with logging
 export const deleteTransaction = async (req, res) => {
   try {
-    const deletedTransaction = await Finance.findByIdAndDelete(req.params.id);
-    if (!deletedTransaction) return res.status(404).json({ message: 'Transaction not found' });
+    const { id } = req.params;
+
+    const transaction = await Finance.findById(id);
+    if (!transaction) return res.status(404).json({ message: 'Transaction not found' });
+
+    await logChange({
+      modelName: 'Finance',
+      documentId: transaction._id,
+      operation: 'delete',
+      updatedBy: req.userId || 'unknown',
+      deletedData: transaction.toObject(),
+    });
+
+    await transaction.deleteOne();
     res.status(200).json({ message: 'Transaction deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
