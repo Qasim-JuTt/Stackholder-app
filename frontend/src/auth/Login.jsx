@@ -31,51 +31,56 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validateForm()) return;
 
-    setIsLoading(true);
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/users/login`,
-        formData
-      );
+  setIsLoading(true);
+  try {
+    const response = await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/users/login`,
+      formData
+    );
 
-      const { token, user } = response.data;
+    const { token, user } = response.data;
 
-      // Store token and user info
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('role', user.role);
+    // Store only limited user info
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify({
+      id: user.id,
+      email: user.email,
+      role: user.role
+    }));
+    localStorage.setItem('role', user.role);
 
-      // ✅ Generate or get existing sessionId
-      let sessionId = localStorage.getItem('sessionId');
-      if (!sessionId) {
-        sessionId = crypto.randomUUID();
-        localStorage.setItem('sessionId', sessionId);
-      }
-
-      // ✅ Track login activity
-      await logLogin(user.id, sessionId);
-
-      alert('Login successful!');
-
-      // Redirect by role
-      const role = user.role;
-      if (['admin', 'main', 'sub'].includes(role)) {
-        navigate('/dashboard');
-      } else {
-        navigate('/');
-      }
-
-    } catch (error) {
-      const message = error.response?.data?.message || 'Login failed';
-      alert(message);
-    } finally {
-      setIsLoading(false);
+    // ✅ Generate or get existing sessionId
+    let sessionId = localStorage.getItem('sessionId');
+    if (!sessionId) {
+      sessionId = crypto.randomUUID();
+      localStorage.setItem('sessionId', sessionId);
     }
-  };
+
+    // ✅ Track login activity
+    await logLogin(user.id, sessionId);
+
+    alert('Login successful!');
+
+    // Redirect based on role
+    const role = user.role;
+    if (['admin', 'main', 'sub'].includes(role)) {
+      navigate('/dashboard');
+    } else {
+      navigate('/');
+    }
+
+  } catch (error) {
+    const message = error.response?.data?.error || 'Login failed';
+    alert(message);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100 relative overflow-hidden">

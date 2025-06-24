@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const pageVisitSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'AdminUser', default: null },
   page: String,
   ipAddress: String,
   userAgent: String,

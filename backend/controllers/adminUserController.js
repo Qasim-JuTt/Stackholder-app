@@ -28,7 +28,6 @@ export const approveUser = async (req, res) => {
     res.status(500).json({ error: 'Approval failed' });
   }
 };
-
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -48,7 +47,15 @@ export const loginUser = async (req, res) => {
       { expiresIn: '1d' }
     );
 
-    res.json({ token, user });
+    // Return only selected user fields
+    res.json({ 
+      token, 
+      user: { 
+        id: user._id, 
+        email: user.email, 
+        role: user.role 
+      } 
+    });
   } catch (err) {
     res.status(500).json({ error: 'Login failed' });
   }
