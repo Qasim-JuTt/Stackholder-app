@@ -17,6 +17,7 @@ import SignUpAdmin from './pages/SignUpAdmin'
 import ActivityTracker from './components/ActivityTracker'
 import RegisterPage from './pages/RegisterPage'
 import ManageUser from './pages/ManageUser'
+import History from './pages/History'
 
 function App() {
   return (
@@ -40,6 +41,8 @@ function App() {
         <Route path="/profit-distribution" element={<FinanceTracker />} />
         <Route path="/project-finance" element={<ProjectFinance />} />
         <Route path="/notification" element={<NotificationComponent />} />
+        <Route path="/history" element={<History/>} />
+
 
       </Routes>
     </Router>

@@ -9,6 +9,7 @@ import {
   FaSignOutAlt,
   FaBars,
   FaWallet,
+  FaHistory,
 } from 'react-icons/fa';
 
 const Sidebar = () => {
@@ -23,6 +24,8 @@ const Sidebar = () => {
     { name: 'Financial Dashboard', icon: <FaWallet />, path: '/financials' },
     { name: 'Profit Distribution', icon: <FaChartPie />, path: '/profit-distribution' },
     { name: 'Manage User', icon: <FaUsers />, path: '/manage-user' },
+     { name: 'History', icon: <FaHistory/>, path: '/history' },
+
 
   ];
 
