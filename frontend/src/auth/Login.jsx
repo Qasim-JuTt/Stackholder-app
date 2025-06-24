@@ -74,7 +74,7 @@ const Login = () => {
     }
 
   } catch (error) {
-    const message = error.response?.data?.error || 'Login failed';
+    const message = error.response?.data?.error || 'Login faileds';
     alert(message);
   } finally {
     setIsLoading(false);
