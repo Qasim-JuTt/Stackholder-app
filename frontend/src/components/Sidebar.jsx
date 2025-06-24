@@ -22,6 +22,8 @@ const Sidebar = () => {
     { name: 'Project Financials', icon: <FaFileExport />, path: '/project-finance' },
     { name: 'Financial Dashboard', icon: <FaWallet />, path: '/financials' },
     { name: 'Profit Distribution', icon: <FaChartPie />, path: '/profit-distribution' },
+    { name: 'Manage User', icon: <FaUsers />, path: '/manage-user' },
+
   ];
 
   const handleLogout = () => {

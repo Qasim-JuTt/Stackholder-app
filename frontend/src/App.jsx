@@ -16,7 +16,7 @@ import SignUpUser from './pages/SignUpUser'
 import SignUpAdmin from './pages/SignUpAdmin'
 import ActivityTracker from './components/ActivityTracker'
 import RegisterPage from './pages/RegisterPage'
-import AdminDashboard from './pages/AdminDashboard'
+import ManageUser from './pages/ManageUser'
 
 function App() {
   return (
@@ -25,7 +25,7 @@ function App() {
     <ActivityTracker />      {/* <Sidebar /> */}
       <Routes>
        <Route path="/register" element={<RegisterPage />} />
-       <Route path="/admindashboard" element={<AdminDashboard />} />
+       <Route path="/manage-user" element={<ManageUser />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/stakeholders" element={<Stakeholders />} />
         

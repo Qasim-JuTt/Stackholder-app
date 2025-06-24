@@ -80,3 +80,30 @@ export const registerUser = async (req, res) => {
     res.status(500).json({ error: 'Registration failed' });
   }
 };
+
+// Delete user
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await AdminUser.findByIdAndDelete(req.params.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.status(200).json({ message: 'User deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error deleting user' });
+  }
+};
+
+// Update user
+export const updateUser = async (req, res) => {
+  try {
+    const { name, email, role, isApproved } = req.body;
+    const updatedUser = await AdminUser.findByIdAndUpdate(
+      req.params.id,
+      { name, email, role, isApproved },
+      { new: true }
+    );
+    if (!updatedUser) return res.status(404).json({ error: 'User not found' });
+    res.status(200).json(updatedUser);
+  } catch (err) {
+    res.status(500).json({ error: 'Error updating user' });
+  }
+};

@@ -38,7 +38,7 @@ const Login = () => {
     setIsLoading(true);
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/login`,
+        `${import.meta.env.VITE_API_URL}/api/users/login`,
         formData
       );
 
@@ -63,7 +63,7 @@ const Login = () => {
 
       // Redirect by role
       const role = user.role;
-      if (['admin', 'developer', 'client', 'investor'].includes(role)) {
+      if (['admin', 'main', 'sub'].includes(role)) {
         navigate('/dashboard');
       } else {
         navigate('/');

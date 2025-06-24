@@ -86,20 +86,13 @@ export const getUserProfile = async () => {
   }
 };
 
-export const updateUser = async (id, userData) => {
-  try {
-    const response = await api.put(`/users/${id}`, userData);
-    return { data: response.data, error: null };
-  } catch (error) {
-    return { data: null, error: error.response?.data?.error || 'Update failed' };
-  }
-};
 
-export const deleteUser = async (id) => {
-  try {
-    const response = await api.delete(`/users/${id}`);
-    return { data: response.data, error: null };
-  } catch (error) {
-    return { data: null, error: error.response?.data?.error || 'Deletion failed' };
-  }
-};
+export const deleteUser = (id, token) =>
+  api.delete(`/users/delete/${id}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+export const updateUser = (id, data, token) =>
+  api.put(`/users/update/${id}`, data, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
