@@ -9,6 +9,7 @@ export const logChange = async ({
   before = null,
   after = null,
   deletedData = null,
+  createdData = null,
 }) => {
   try {
     await ChangeLog.create({
@@ -19,6 +20,7 @@ export const logChange = async ({
       before,
       after,
       deletedData,
+      createdData,
     });
   } catch (err) {
     console.error('Logging failed:', err.message);

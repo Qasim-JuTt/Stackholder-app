@@ -116,69 +116,52 @@ const UserManagement = ({ token }) => {
         </button>
       </div>
 
-      {activeTab === 'unapproved' ? (
-        <div className="border rounded shadow p-4">
-          <h2 className="text-xl font-bold mb-4">Pending Approvals</h2>
-          {unapprovedUsers.length === 0 ? (
-            <p>No pending approvals.</p>
-          ) : (
-            <div className="space-y-2">
-              {unapprovedUsers.map(user => (
-                <div key={user._id} className="flex justify-between items-center border-b py-2">
-                  <div>
-                    <span className="font-medium">{user.name}</span>
-                    <span className="text-gray-600 ml-2">({user.email})</span>
-                    <span className="ml-2 px-2 py-1 bg-gray-100 rounded text-sm">{user.role}</span>
-                  </div>
-                  <button
-                    onClick={() => handleApprove(user._id)}
-                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
-                  >
-                    Approve
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="border rounded shadow p-4">
-          <h2 className="text-xl font-bold mb-4">All Users</h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+      <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead className="text-left text-xs uppercase text-gray-500 bg-gray-50">
+              <tr className="border-b">
+                <th className="py-3 pr-4 whitespace-nowrap">Name</th>
+                <th className="py-3 pr-4 whitespace-nowrap">Email</th>
+                <th className="py-3 pr-4 whitespace-nowrap">Role</th>
+                <th className="py-3 pr-4 whitespace-nowrap text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {(activeTab === 'unapproved' ? unapprovedUsers : allUsers).map(user => (
+                <tr key={user._id} className="hover:bg-gray-50 transition">
+                  <td className="py-4 pr-4 whitespace-nowrap">{user.name}</td>
+                  <td className="py-4 pr-4 whitespace-nowrap">{user.email}</td>
+                  <td className="py-4 pr-4 whitespace-nowrap">
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
+                      user.role === 'main' ? 'bg-blue-100 text-blue-800' :
+                      'bg-green-100 text-green-800'
+                    }`}>
+                      {user.role}
+                    </span>
+                  </td>
+                  <td className="py-4 pr-4 whitespace-nowrap text-right space-x-2">
+                    {activeTab === 'unapproved' ? (
+                      <button
+                        onClick={() => handleApprove(user._id)}
+                        className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                      >
+                        Approve
+                      </button>
+                    ) : (
+                      <>
+                        <button onClick={() => openEditModal(user)} className="text-blue-600 hover:text-blue-800">✏️</button>
+                        <button onClick={() => handleDelete(user._id)} className="text-red-600 hover:text-red-800">🗑️</button>
+                      </>
+                    )}
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {allUsers.map(user => (
-                  <tr key={user._id}>
-                    <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded text-sm ${
-                        user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
-                        user.role === 'main' ? 'bg-blue-100 text-blue-800' :
-                        'bg-green-100 text-green-800'
-                      }`}>
-                        {user.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap flex gap-3">
-                      <button onClick={() => openEditModal(user)} className="text-blue-600 hover:text-blue-800">✏️</button>
-                      <button onClick={() => handleDelete(user._id)} className="text-red-600 hover:text-red-800">🗑️</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
 
       {/* Edit Modal */}
       {editUser && (

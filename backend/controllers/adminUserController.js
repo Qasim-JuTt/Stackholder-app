@@ -84,6 +84,15 @@ export const registerUser = async (req, res) => {
 
     const savedUser = await newUser.save();
 
+    // Log the creation
+    await logChange({
+      modelName: 'AdminUser',
+      documentId: savedUser._id,
+      operation: 'create',
+      updatedBy: savedUser._id.toString(),
+      createdData: savedUser.toObject()
+    });
+
     await createNotification(
       `🆕 User "${savedUser.name}" registered successfully.`,
       savedUser.name

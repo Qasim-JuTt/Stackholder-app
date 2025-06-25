@@ -131,50 +131,46 @@ const History = () => {
           </div>
 
           {/* Logs Table */}
-          <div className="overflow-x-auto">
-            <table className="min-w-full border bg-white rounded-lg shadow-sm">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="px-4 py-2 border text-left">#</th>
-                  <th className="px-4 py-2 border text-left">User</th>
-                  <th className="px-4 py-2 border text-left">Action</th>
-                  <th className="px-4 py-2 border text-left">Page</th>
-                  <th className="px-4 py-2 border text-left">Description</th>
-                  <th className="px-4 py-2 border text-left">Date</th>
-                  <th className="px-4 py-2 border text-left">Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredLogs.length > 0 ? (
-                  filteredLogs.map((log, index) => {
+          <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm overflow-x-auto">
+            {filteredLogs.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">No logs found.</div>
+            ) : (
+              <table className="min-w-full text-sm">
+                <thead className="text-left">
+                  <tr className="text-gray-500 border-b">
+                    <th className="py-3 pr-4 whitespace-nowrap">#</th>
+                    <th className="py-3 pr-4 whitespace-nowrap">User</th>
+                    <th className="py-3 pr-4 whitespace-nowrap">Action</th>
+                    <th className="py-3 pr-4 whitespace-nowrap">Page</th>
+                    <th className="py-3 pr-4 whitespace-nowrap">Description</th>
+                    <th className="py-3 pr-4 whitespace-nowrap">Date</th>
+                    <th className="py-3 pr-4 whitespace-nowrap">Time</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredLogs.map((log, index) => {
                     const [date, time] = log.timestamp.split('T');
                     return (
-                      <tr key={log.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-2 border">{index + 1}</td>
-                        <td className="px-4 py-2 border">{log.user}</td>
-                        <td className="px-4 py-2 border">
+                      <tr key={log.id} className="hover:bg-gray-50 transition">
+                        <td className="py-4 pr-4 whitespace-nowrap">{index + 1}</td>
+                        <td className="py-4 pr-4 whitespace-nowrap">{log.user}</td>
+                        <td className="py-4 pr-4 whitespace-nowrap">
                           <span
-                            className={`px-2 py-1 rounded text-sm font-medium ${actionColors[log.action]}`}
+                            className={`px-2 py-1 rounded-full text-xs font-semibold ${actionColors[log.action]}`}
                           >
                             {log.action}
                           </span>
                         </td>
-                        <td className="px-4 py-2 border">{log.page}</td>
-                        <td className="px-4 py-2 border">{log.description}</td>
-                        <td className="px-4 py-2 border">{date}</td>
-                        <td className="px-4 py-2 border">{time}</td>
+                        <td className="py-4 pr-4 whitespace-nowrap">{log.page}</td>
+                        <td className="py-4 pr-4 whitespace-nowrap text-gray-600">{log.description}</td>
+                        <td className="py-4 pr-4 whitespace-nowrap">{date}</td>
+                        <td className="py-4 pr-4 whitespace-nowrap">{time}</td>
                       </tr>
                     );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan="7" className="text-center py-4 text-gray-500">
-                      No logs found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  })}
+                </tbody>
+              </table>
+            )}
           </div>
 
           {/* Pagination Placeholder (Future Use) */}

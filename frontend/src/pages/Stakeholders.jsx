@@ -5,6 +5,7 @@ import Sidebar from "../components/Sidebar";
 import Pagination from "../components/Pagination";
 import InputField from "../components/InputField";
 import Navbar from "../components/Navbar";
+
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const roleColors = {
@@ -44,8 +45,14 @@ const Stakeholders = () => {
     const storedUser = localStorage.getItem("user");
     if (!storedUser) return;
 
-    const user = JSON.parse(storedUser);
-    const userId = user.id;
+    let userId;
+    try {
+      const user = JSON.parse(storedUser);
+      userId = user?.id;
+      if (!userId) return;
+    } catch {
+      return;
+    }
 
     axios
       .get(`${apiUrl}/api/projects/getName?userId=${userId}`)
@@ -54,8 +61,24 @@ const Stakeholders = () => {
   }, []);
 
   const fetchStakeholders = () => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const userId = user?.id;
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      console.error("No user found in localStorage");
+      return;
+    }
+
+    let userId;
+    try {
+      const user = JSON.parse(storedUser);
+      userId = user?.id;
+      if (!userId) {
+        console.error("Invalid user object or missing id.");
+        return;
+      }
+    } catch (err) {
+      console.error("Failed to parse user from localStorage", err);
+      return;
+    }
 
     axios
       .get(`${apiUrl}/api/stakeholders?userId=${userId}`)
@@ -111,10 +134,16 @@ const Stakeholders = () => {
       return;
     }
 
-    const userObj = JSON.parse(storedUser);
-    const userId = userObj?.id;
-    if (!userId) {
-      alert("User ID missing in localStorage.");
+    let userId;
+    try {
+      const userObj = JSON.parse(storedUser);
+      userId = userObj?.id;
+      if (!userId) {
+        alert("User ID missing in localStorage.");
+        return;
+      }
+    } catch {
+      alert("Failed to read user data.");
       return;
     }
 

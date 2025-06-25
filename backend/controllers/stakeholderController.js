@@ -34,17 +34,44 @@ export const getStakeholderById = async (req, res) => {
 
 export const createStakeholder = async (req, res) => {
   try {
-    const newStakeholder = new Stakeholder(req.body); // includes `user` field
+    const { user, project } = req.body;
+
+    // Validate required fields
+    if (!user || !project) {
+      return res.status(400).json({ message: "Missing required fields: user or project" });
+    }
+
+    // Create stakeholder
+    const newStakeholder = new Stakeholder(req.body);
     const saved = await newStakeholder.save();
+
+    // Populate project name
     const populated = await saved.populate('project', 'name');
 
-    await createNotification('👥 Stakeholder added to project "{name}"', populated.project.name);
+    // 🔍 Log the creation
+    await logChange({
+      modelName: 'Stakeholder',
+      documentId: saved._id,
+      operation: 'create',
+      updatedBy: user,
+      createdData: saved.toObject(),
+    });
 
+    // 🔔 Create notification
+    await createNotification(
+      `👥 Stakeholder added to project "${populated.project.name}"`,
+      populated.project.name
+    );
+
+    // Respond with populated stakeholder
     res.status(201).json(populated);
   } catch (err) {
+    console.error("Error creating stakeholder:", err);
     res.status(400).json({ message: err.message });
   }
 };
+
+
 
 
 // ✅ Update Stakeholder with logging

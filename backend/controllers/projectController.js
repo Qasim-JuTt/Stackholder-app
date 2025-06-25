@@ -22,7 +22,6 @@ export const getProjects = async (req, res) => {
   }
 };
 
-
 export const createProject = async (req, res) => {
   try {
     const { name, description, value, completion, user } = req.body;
@@ -37,8 +36,17 @@ export const createProject = async (req, res) => {
 
     const saved = await newProject.save();
 
+    // 🔍 Log the creation activity
+    await logChange({
+      modelName: 'Project',
+      documentId: saved._id,
+      operation: 'create',
+      updatedBy: user,
+      createdData: saved.toObject(),
+    });
+
     await createNotification(
-      '🆕 Project "{name}" created successfully.',
+      `🆕 Project "${saved.name}" created successfully.`,
       saved.name
     );
 
@@ -51,7 +59,6 @@ export const createProject = async (req, res) => {
     res.status(400).json({ error: "❌ Failed to create project" });
   }
 };
-
 // controllers/projectController.js
 
 // ✅ Update Project with logging

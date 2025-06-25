@@ -5,6 +5,16 @@ export const addTransaction = async (req, res) => {
   try {
     const newTransaction = new Finance(req.body); // user field should be included in body
     const saved = await newTransaction.save();
+
+    // Log the creation
+    await logChange({
+      modelName: 'Finance',
+      documentId: saved._id,
+      operation: 'create',
+      updatedBy: req.body.user, // assuming user ID is included in the request body
+      createdData: saved.toObject()
+    });
+
     res.status(201).json(saved);
   } catch (err) {
     res.status(400).json({ error: err.message });
