@@ -36,7 +36,7 @@ export const loginUser = async (req, res) => {
     const user = await AdminUser.findOne({ email });
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
-    if (user.role !== 'admin' && !user.isApproved) {
+    if (user.role !== 'main' && !user.isApproved) {
       return res.status(401).json({ error: 'Account not yet approved' });
     }
 
