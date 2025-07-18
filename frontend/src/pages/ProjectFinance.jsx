@@ -16,7 +16,7 @@ const ProjectFinance = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editTransactionId, setEditTransactionId] = useState(null);
 
- const fetchTransactions = async () => {
+  const fetchTransactions = async () => {
     const storedUser = localStorage.getItem("user");
     if (!storedUser) return;
 

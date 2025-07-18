@@ -1,30 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Pencil, Trash2, Plus } from 'lucide-react';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
-import Pagination from '../components/Pagination';
-import InputField from '../components/InputField';
-import { useNotifications } from '../context/NotificationContext';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Pencil, Trash2, Plus } from "lucide-react";
+import Sidebar from "../components/Sidebar";
+import Navbar from "../components/Navbar";
+import Pagination from "../components/Pagination";
+import InputField from "../components/InputField";
+import { useNotifications } from "../context/NotificationContext";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const initialModalData = {
-  id: '',
-  name: '',
-  description: '',
-  value: '',
+  id: "",
+  name: "",
+  description: "",
+  value: "",
   completion: 0,
 };
 
 const completionColor = (value) =>
-  value < 30 ? 'bg-red-500' : value < 70 ? 'bg-yellow-500' : 'bg-green-500';
+  value < 30 ? "bg-red-500" : value < 70 ? "bg-yellow-500" : "bg-green-500";
 
 const ProjectManagement = () => {
   const projectsPerPage = 5;
 
   const [projects, setProjects] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalData, setModalData] = useState(initialModalData);
@@ -34,31 +34,37 @@ const ProjectManagement = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const storedUser = localStorage.getItem('user');
+        const storedUser = localStorage.getItem("user");
         if (!storedUser) return;
         const userObj = JSON.parse(storedUser);
         const userId = userObj?.id;
 
-        const res = await axios.get(`${apiUrl}/api/projects/getAll?userId=${userId}`);
+        const res = await axios.get(
+          `${apiUrl}/api/projects/getAll?userId=${userId}`
+        );
         setProjects(res.data);
       } catch (err) {
-        console.error('Failed to fetch projects', err);
-        addNotification('❌ Failed to load projects');
+        console.error("Failed to fetch projects", err);
+        addNotification("❌ Failed to load projects");
       }
     };
     fetchProjects();
   }, [addNotification]);
 
-  const filtered = projects.filter(p =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.description.toLowerCase().includes(searchTerm.toLowerCase())
+  const filtered = projects.filter(
+    (p) =>
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const paginated = filtered.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
+  const paginated = filtered.slice(
+    (currentPage - 1) * projectsPerPage,
+    currentPage * projectsPerPage
+  );
 
   const handleSave = async () => {
     try {
-      const storedUser = localStorage.getItem('user');
+      const storedUser = localStorage.getItem("user");
       if (!storedUser) {
         addNotification("❌ User not found. Please login again.");
         return;
@@ -77,18 +83,25 @@ const ProjectManagement = () => {
       if (!modalData.id) {
         const res = await axios.post(`${apiUrl}/api/projects/create`, payload);
         setProjects([...projects, res.data.project || res.data]);
-        addNotification(res.data.message || '✅ Project created successfully');
+        addNotification(res.data.message || "✅ Project created successfully");
       } else {
-        const res = await axios.put(`${apiUrl}/api/projects/update/${modalData.id}`, modalData);
-        setProjects(projects.map(p => (p._id === modalData.id ? res.data.project || res.data : p)));
-        addNotification(res.data.message || '✏️ Project updated successfully');
+        const res = await axios.put(
+          `${apiUrl}/api/projects/update/${modalData.id}`,
+          modalData
+        );
+        setProjects(
+          projects.map((p) =>
+            p._id === modalData.id ? res.data.project || res.data : p
+          )
+        );
+        addNotification(res.data.message || "✏️ Project updated successfully");
       }
 
       setIsModalOpen(false);
       setModalData(initialModalData);
     } catch (err) {
-      addNotification('❌ Failed to save project');
-      console.error('Error saving/updating project:', err);
+      addNotification("❌ Failed to save project");
+      console.error("Error saving/updating project:", err);
     }
   };
 
@@ -96,24 +109,28 @@ const ProjectManagement = () => {
     if (confirm(`Are you sure you want to delete this project?`)) {
       try {
         await axios.delete(`${apiUrl}/api/projects/delete/${id}`);
-        setProjects(projects.filter(p => p._id !== id));
-        addNotification('🗑️ Project deleted successfully');
+        setProjects(projects.filter((p) => p._id !== id));
+        addNotification("🗑️ Project deleted successfully");
       } catch (err) {
-        addNotification('❌ Failed to delete project');
-        console.error('Failed to delete project:', err);
+        addNotification("❌ Failed to delete project");
+        console.error("Failed to delete project:", err);
       }
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      <div className="w-25 fixed md:relative z-40"><Sidebar /></div>
+      <div className="w-25 fixed md:relative z-40">
+        <Sidebar />
+      </div>
 
       <div className="flex-1 md:ml-40">
         <Navbar />
         <main className="p-6 space-y-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-indigo-600">Project Management</h1>
+            <h1 className="text-2xl font-bold text-indigo-600">
+              Project Management
+            </h1>
             <button
               onClick={() => {
                 setModalData(initialModalData);
@@ -125,10 +142,14 @@ const ProjectManagement = () => {
             </button>
           </div>
 
-          <div className={`bg-white p-6 rounded-xl ${filtered.length > 0 ? 'shadow-sm' : ''}`}>
+          <div
+            className={`bg-white p-6 rounded-xl ${
+              filtered.length > 0 ? "shadow-sm" : ""
+            }`}
+          >
             {filtered.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                No projects found. {searchTerm && 'Try a different search.'}
+                No projects found. {searchTerm && "Try a different search."}
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -143,20 +164,28 @@ const ProjectManagement = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {paginated.map(p => (
+                    {paginated.map((p) => (
                       <tr key={p._id} className="hover:bg-gray-50">
                         <td className="py-4 pr-4 font-medium">{p.name}</td>
-                        <td className="py-4 pr-4 text-gray-600">{p.description}</td>
-                        <td className="py-4 pr-4 text-indigo-600 font-semibold">${p.value?.toLocaleString()}</td>
+                        <td className="py-4 pr-4 text-gray-600">
+                          {p.description}
+                        </td>
+                        <td className="py-4 pr-4 text-indigo-600 font-semibold">
+                          ${p.value?.toLocaleString()}
+                        </td>
                         <td className="py-4 pr-4">
                           <div className="flex items-center">
                             <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
                               <div
-                                className={`h-2.5 rounded-full ${completionColor(p.completion)}`}
+                                className={`h-2.5 rounded-full ${completionColor(
+                                  p.completion
+                                )}`}
                                 style={{ width: `${p.completion}%` }}
                               />
                             </div>
-                            <span className="text-sm text-gray-500">{p.completion}%</span>
+                            <span className="text-sm text-gray-500">
+                              {p.completion}%
+                            </span>
                           </div>
                         </td>
                         <td className="py-4 pr-4 text-right space-x-2">
@@ -199,7 +228,7 @@ const ProjectManagement = () => {
           <div className="bg-white rounded-xl p-8 w-full max-w-lg shadow-xl space-y-6">
             <div className="flex justify-between items-center border-b pb-4">
               <h2 className="text-xl font-semibold text-indigo-700">
-                {modalData.id ? 'Edit Project' : 'Add Project'}
+                {modalData.id ? "Edit Project" : "Add Project"}
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -211,31 +240,46 @@ const ProjectManagement = () => {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Project Name
+                </label>
                 <InputField
                   type="text"
                   placeholder="Project Name"
                   value={modalData.name}
-                  onChange={e => setModalData({ ...modalData, name: e.target.value })}
+                  onChange={(e) =>
+                    setModalData({ ...modalData, name: e.target.value })
+                  }
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
                 <InputField
                   type="text"
                   placeholder="Description"
                   textarea
                   value={modalData.description}
-                  onChange={e => setModalData({ ...modalData, description: e.target.value })}
+                  onChange={(e) =>
+                    setModalData({ ...modalData, description: e.target.value })
+                  }
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Value ($)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Value ($)
+                </label>
                 <InputField
                   type="number"
                   placeholder="Value ($)"
                   value={modalData.value}
-                  onChange={e => setModalData({ ...modalData, value: Number(e.target.value) })}
+                  onChange={(e) =>
+                    setModalData({
+                      ...modalData,
+                      value: Number(e.target.value),
+                    })
+                  }
                 />
               </div>
               <div>
@@ -247,7 +291,12 @@ const ProjectManagement = () => {
                   min="0"
                   max="100"
                   value={modalData.completion}
-                  onChange={e => setModalData({ ...modalData, completion: parseInt(e.target.value, 10) })}
+                  onChange={(e) =>
+                    setModalData({
+                      ...modalData,
+                      completion: parseInt(e.target.value, 10),
+                    })
+                  }
                   className="w-full h-2 bg-gray-200 rounded-lg"
                 />
               </div>
@@ -264,7 +313,7 @@ const ProjectManagement = () => {
                 onClick={handleSave}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
               >
-                {modalData.id ? 'Update' : 'Save'}
+                {modalData.id ? "Update" : "Save"}
               </button>
             </div>
           </div>

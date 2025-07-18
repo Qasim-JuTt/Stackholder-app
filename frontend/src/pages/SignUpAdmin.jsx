@@ -1,7 +1,7 @@
 // src/pages/SignUpAdmin.jsx
-import React from 'react'
-import SignUp from '../auth/Singup'
+import React from "react";
+import SignUp from "../auth/Singup";
 
-const SignUpAdmin = () => <SignUp role="admin" />
+const SignUpAdmin = () => <SignUp role="admin" />;
 
-export default SignUpAdmin
+export default SignUpAdmin;

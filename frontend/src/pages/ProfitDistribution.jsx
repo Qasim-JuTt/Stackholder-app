@@ -21,25 +21,24 @@ const ProfitDistribution = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  const fetchProfitData = async () => {
-    try {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const userId = user?.id;
+  useEffect(() => {
+    const fetchProfitData = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        const userId = user?.id;
 
-      const res = await axios.get(
-        `${apiUrl}/api/projects/profit-distribution?userId=${userId}`
-      );
-      setProjects(res.data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Failed to fetch profit data", error);
-    }
-  };
+        const res = await axios.get(
+          `${apiUrl}/api/projects/profit-distribution?userId=${userId}`
+        );
+        setProjects(res.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch profit data", error);
+      }
+    };
 
-  fetchProfitData();
-}, []);
-
+    fetchProfitData();
+  }, []);
 
   const calcStats = () => {
     const totalBudget = projects.reduce((sum, p) => sum + p.project.value, 0);
@@ -54,12 +53,12 @@ useEffect(() => {
     );
 
     return [
-       {
+      {
         title: "Total Income",
         value: `$${totalBudget.toLocaleString()}`,
         bg: "#2563eb",
       },
-       {
+      {
         title: "Total Expenditure",
         value: `$${totalExpenditure.toLocaleString()}`,
         bg: "#7c3aed",

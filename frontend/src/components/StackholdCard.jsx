@@ -31,9 +31,9 @@ const StakeholderCard = ({ stakeholderData }) => {
           stroke={colors[role]}
           strokeWidth="3"
           fill="transparent"
-          r="16"
+          r="12"
           cx="18"
-          cy="18"
+          cy="14"
           strokeDasharray={`${(percentage / total) * 100} ${
             100 - (percentage / total) * 100
           }`}

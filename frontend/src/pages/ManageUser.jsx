@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Sidebar from "../components/Sidebar";
-import {  Plus } from 'lucide-react';
+import { Plus } from "lucide-react";
 
 import Navbar from "../components/Navbar";
 import UserManagement from "../components/UserManagement";

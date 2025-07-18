@@ -28,7 +28,9 @@ const Dashboard = () => {
 
       const userId = JSON.parse(storedUser).id;
       try {
-        const res = await axios.get(`${apiUrl}/api/stakeholders/stats?userId=${userId}`);
+        const res = await axios.get(
+          `${apiUrl}/api/stakeholders/stats?userId=${userId}`
+        );
         setStakeholders(res.data);
       } catch (err) {
         console.error("Error fetching stakeholder stats:", err);
@@ -161,7 +163,9 @@ const Dashboard = () => {
                   />
 
                   <StakeholderCard
-                    stakeholderData={getStakeholderSummary(project.stakeholders)}
+                    stakeholderData={getStakeholderSummary(
+                      project.stakeholders
+                    )}
                   />
                 </div>
               ))}

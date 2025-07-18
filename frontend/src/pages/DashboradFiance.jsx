@@ -20,38 +20,50 @@ ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 const FinanceDashboard = () => {
   const [projects, setProjects] = useState([]);
 
- useEffect(() => {
-  const fetchProjects = async () => {
-    try {
-      const user = JSON.parse(localStorage.getItem("user")); // make sure this exists
-      if (!user || !user.id) {
-        console.error("User ID missing from localStorage");
-        return;
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user")); // make sure this exists
+        if (!user || !user.id) {
+          console.error("User ID missing from localStorage");
+          return;
+        }
+
+        const res = await axios.get(`${apiUrl}/api/projects/expenses`, {
+          params: { userId: user.id },
+        });
+
+        setProjects(res.data);
+      } catch (err) {
+        console.error("Failed to fetch project data", err);
       }
+    };
 
-      const res = await axios.get(`${apiUrl}/api/projects/expenses`, {
-        params: { userId: user.id },
-      });
-
-      setProjects(res.data);
-    } catch (err) {
-      console.error("Failed to fetch project data", err);
-    }
-  };
-
-  fetchProjects();
-}, []);
-
+    fetchProjects();
+  }, []);
 
   const totalBudget = projects.reduce((sum, p) => sum + p.value, 0);
-  const totalExpenditure = projects.reduce((sum, p) => sum + p.totalExpenditure, 0);
+  const totalExpenditure = projects.reduce(
+    (sum, p) => sum + p.totalExpenditure,
+    0
+  );
   const avgCompletion = projects.length
-    ? Math.round(projects.reduce((sum, p) => sum + p.completion, 0) / projects.length)
+    ? Math.round(
+        projects.reduce((sum, p) => sum + p.completion, 0) / projects.length
+      )
     : 0;
 
   const stakeholderStats = [
-    { title: "Total Budget", value: `$${totalBudget.toLocaleString()}`, bg: "#16a34a" },
-    { title: "Total Expenditure", value: `$${totalExpenditure.toLocaleString()}`, bg: "#2563eb" },
+    {
+      title: "Total Budget",
+      value: `$${totalBudget.toLocaleString()}`,
+      bg: "#16a34a",
+    },
+    {
+      title: "Total Expenditure",
+      value: `$${totalExpenditure.toLocaleString()}`,
+      bg: "#2563eb",
+    },
     {
       title: "Remaining Funds",
       value: `$${(totalBudget - totalExpenditure).toLocaleString()}`,
@@ -113,12 +125,18 @@ const FinanceDashboard = () => {
       <div className="flex-1 flex flex-col">
         <Navbar />
         <div className="p-6">
-          <h1 className="text-2xl font-bold mb-6 text-[#1e1e1e]">Finance Dashboard</h1>
+          <h1 className="text-2xl font-bold mb-6 text-[#1e1e1e]">
+            Finance Dashboard
+          </h1>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {stakeholderStats.map((stat, i) => (
-              <div key={i} className="text-white p-4 rounded-xl shadow" style={{ backgroundColor: stat.bg }}>
+              <div
+                key={i}
+                className="text-white p-4 rounded-xl shadow"
+                style={{ backgroundColor: stat.bg }}
+              >
                 <p>{stat.title}</p>
                 <h2 className="text-2xl font-bold">{stat.value}</h2>
               </div>
@@ -141,7 +159,10 @@ const FinanceDashboard = () => {
                   />
                 </div>
                 <div className="h-52">
-                  <Bar data={getBarData(proj.value, proj.totalExpenditure)} options={barOptions} />
+                  <Bar
+                    data={getBarData(proj.value, proj.totalExpenditure)}
+                    options={barOptions}
+                  />
                 </div>
               </div>
             ))}

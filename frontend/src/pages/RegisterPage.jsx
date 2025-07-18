@@ -1,6 +1,6 @@
-import React from 'react';
-import { X } from 'lucide-react';
-import RegisterForm from '../components/RegisterForm';
+import React from "react";
+import { X } from "lucide-react";
+import RegisterForm from "../components/RegisterForm";
 
 const RegisterModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;

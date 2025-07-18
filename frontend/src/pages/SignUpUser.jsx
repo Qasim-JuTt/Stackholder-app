@@ -1,7 +1,7 @@
 // src/pages/SignUpUser.jsx
-import React from 'react'
-import SignUp from '../auth/Singup'
+import React from "react";
+import SignUp from "../auth/Singup";
 
-const SignUpUser = () => <SignUp role="client" />
+const SignUpUser = () => <SignUp role="client" />;
 
-export default SignUpUser
+export default SignUpUser;

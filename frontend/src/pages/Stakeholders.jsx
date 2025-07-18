@@ -176,7 +176,9 @@ const Stakeholders = () => {
     if (!projectId) return setAvailableShare(100);
 
     try {
-      const res = await axios.get(`${apiUrl}/api/projects/${projectId}/available-share`);
+      const res = await axios.get(
+        `${apiUrl}/api/projects/${projectId}/available-share`
+      );
       const share = res.data.availableShare;
       setAvailableShare(share);
 
@@ -196,7 +198,9 @@ const Stakeholders = () => {
         <Navbar />
         <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
           <div className="flex justify-between items-center flex-wrap gap-4">
-            <h1 className="text-3xl font-bold text-indigo-600">Manage Stakeholders</h1>
+            <h1 className="text-3xl font-bold text-indigo-600">
+              Manage Stakeholders
+            </h1>
             <button
               onClick={handleAdd}
               className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
@@ -215,13 +219,19 @@ const Stakeholders = () => {
                 <table className="min-w-full text-sm">
                   <thead className="text-gray-500 border-b">
                     <tr>
-                      {["Name", "Email", "Role", "Responsibilities", "Project", "Share", "Actions"].map(
-                        (h, i) => (
-                          <th key={i} className="py-3 pr-4 text-left">
-                            {h}
-                          </th>
-                        )
-                      )}
+                      {[
+                        "Name",
+                        "Email",
+                        "Role",
+                        "Responsibilities",
+                        "Project",
+                        "Share",
+                        "Actions",
+                      ].map((h, i) => (
+                        <th key={i} className="py-3 pr-4 text-left">
+                          {h}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -230,15 +240,23 @@ const Stakeholders = () => {
                         <td className="py-4 pr-4 font-medium">{stk.name}</td>
                         <td className="py-4 pr-4">{stk.email}</td>
                         <td className="py-4 pr-4">
-                          <span className={`font-medium ${roleColors[stk.role]}`}>{stk.role}</span>
+                          <span
+                            className={`font-medium ${roleColors[stk.role]}`}
+                          >
+                            {stk.role}
+                          </span>
                         </td>
-                        <td className="py-4 pr-4 text-gray-600">{stk.responsibilities}</td>
+                        <td className="py-4 pr-4 text-gray-600">
+                          {stk.responsibilities}
+                        </td>
                         <td className="py-4 pr-4">{stk.project?.name}</td>
                         <td className="py-4 pr-4">
                           <div className="flex items-center">
                             <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
                               <div
-                                className={`h-2.5 rounded-full ${shareColor(stk.share)}`}
+                                className={`h-2.5 rounded-full ${shareColor(
+                                  stk.share
+                                )}`}
                                 style={{ width: `${stk.share}%` }}
                               ></div>
                             </div>
@@ -271,7 +289,9 @@ const Stakeholders = () => {
             <div className="mt-6">
               <Pagination
                 currentPage={currentPage}
-                totalPages={Math.ceil(filteredStakeholders.length / stakeholdersPerPage)}
+                totalPages={Math.ceil(
+                  filteredStakeholders.length / stakeholdersPerPage
+                )}
                 onPageChange={setCurrentPage}
               />
             </div>
@@ -300,7 +320,9 @@ const Stakeholders = () => {
                 label="Name"
                 placeholder="Name"
                 value={modalData.name}
-                onChange={(e) => setModalData({ ...modalData, name: e.target.value })}
+                onChange={(e) =>
+                  setModalData({ ...modalData, name: e.target.value })
+                }
               />
 
               <div>
@@ -314,14 +336,20 @@ const Stakeholders = () => {
                     setEmailError("");
                   }}
                 />
-                {emailError && <p className="text-sm text-red-600 mt-1">{emailError}</p>}
+                {emailError && (
+                  <p className="text-sm text-red-600 mt-1">{emailError}</p>
+                )}
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Role</label>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Role
+                </label>
                 <select
                   value={modalData.role}
-                  onChange={(e) => setModalData({ ...modalData, role: e.target.value })}
+                  onChange={(e) =>
+                    setModalData({ ...modalData, role: e.target.value })
+                  }
                   className="w-full border border-gray-300 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                 >
                   <option value="">Select a role</option>
@@ -333,7 +361,9 @@ const Stakeholders = () => {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Project</label>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Project
+                </label>
                 <select
                   value={modalData.project}
                   onChange={(e) => {
@@ -358,14 +388,20 @@ const Stakeholders = () => {
                 placeholder="Responsibilities"
                 value={modalData.responsibilities}
                 onChange={(e) =>
-                  setModalData({ ...modalData, responsibilities: e.target.value })
+                  setModalData({
+                    ...modalData,
+                    responsibilities: e.target.value,
+                  })
                 }
               />
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Share: <span className="text-indigo-600">{modalData.share}%</span>
-                  <span className="text-sm text-gray-500 ml-2">(Available: {availableShare}%)</span>
+                  Share:{" "}
+                  <span className="text-indigo-600">{modalData.share}%</span>
+                  <span className="text-sm text-gray-500 ml-2">
+                    (Available: {availableShare}%)
+                  </span>
                 </label>
                 <input
                   type="range"

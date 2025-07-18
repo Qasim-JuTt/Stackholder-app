@@ -1,21 +1,21 @@
 // ✅ Frontend: AddUserForm.jsx (React + TailwindCSS + Axios)
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const AddUserForm = ({ token }) => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    parentUserId: '',
+    name: "",
+    email: "",
+    password: "",
+    parentUserId: "",
   });
   const [users, setUsers] = useState([]);
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     axios
-      .get('/api/admin/approved-users', {
+      .get("/api/admin/approved-users", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setUsers(res.data))
@@ -29,15 +29,15 @@ const AddUserForm = ({ token }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('/api/admin/add-subuser', formData, {
+      const res = await axios.post("/api/admin/add-subuser", formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSuccess(res.data.message);
-      setError('');
-      setFormData({ name: '', email: '', password: '', parentUserId: '' });
+      setError("");
+      setFormData({ name: "", email: "", password: "", parentUserId: "" });
     } catch (err) {
       setError(err.response.data.message);
-      setSuccess('');
+      setSuccess("");
     }
   };
 
